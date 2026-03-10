@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================
+   Logbook print styles
+   ========================================= */
+
+.logbook-page {
+  width: 297mm;
+  min-height: 210mm;
+  padding: 8mm 10mm;
+  background: white;
+  color: black;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7.5pt;
+  page-break-after: always;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8pt;
+  font-weight: 600;
+  margin-bottom: 4mm;
+  padding-bottom: 1mm;
+  border-bottom: 0.5pt solid #333;
+}
+
+.logbook-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7pt;
+  line-height: 1.3;
+}
+
+.logbook-table th,
+.logbook-table td {
+  border: 0.5pt solid #555;
+  padding: 1mm 1.5mm;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.logbook-table thead th {
+  background: #f0f0f0;
+  font-weight: 600;
+  font-size: 6.5pt;
+}
+
+.logbook-table thead th small {
+  font-weight: 500;
+  font-size: 5.5pt;
+  display: block;
+  line-height: 1.2;
+}
+
+.logbook-table .header-main th {
+  padding: 1mm 1mm;
+}
+
+.logbook-table .header-sub th {
+  padding: 0.5mm 1mm;
+}
+
+.logbook-table tbody td {
+  font-size: 7pt;
+  height: 5.5mm;
+}
+
+.logbook-table .mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.logbook-table .bold {
+  font-weight: 700;
+}
+
+.logbook-table .small-text {
+  font-size: 6pt;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.logbook-table .empty-row td {
+  height: 5.5mm;
+}
+
+.logbook-table tfoot td {
+  font-size: 6.5pt;
+  font-weight: 600;
+  background: #f8f8f8;
+}
+
+.logbook-table .summary-row td {
+  padding: 1mm 1.5mm;
+}
+
+.logbook-table .summary-row.bold td {
+  font-weight: 700;
+  background: #eee;
+}
+
+.logbook-table .summary-label {
+  text-align: left;
+  font-size: 6pt;
+  padding-left: 2mm;
+}
+
+.logbook-signature {
+  margin-top: 4mm;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  font-size: 6pt;
+}
+
+.logbook-signature-text {
+  margin-right: 10mm;
+  max-width: 70mm;
+  text-align: right;
+}
+
+.logbook-signature-line {
+  width: 40mm;
+  border-bottom: 0.5pt solid #000;
+  margin-left: 4mm;
+}
+
+/* Non-print logbook preview styling (screen) */
+@media screen {
+  .logbook-print-overlay {
+    background: #e5e7eb;
+  }
+  .logbook-page {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    margin: 16px auto;
+  }
+}
+
+/* Print media */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .logbook-print-overlay,
+  .logbook-print-overlay * {
+    visibility: visible;
+  }
+
+  .logbook-print-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .logbook-page {
+    margin: 0;
+    padding: 6mm 8mm;
+    box-shadow: none;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+}
