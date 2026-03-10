@@ -5,12 +5,14 @@ import FlightForm from './components/FlightForm';
 import ImportXLS from './components/ImportXLS';
 import LogbookPrint from './components/LogbookPrint';
 import Settings from './components/Settings';
+import Help from './components/Help';
 import { getFlights, saveFlights, addFlight, updateFlight, deleteFlight, getSettings, getFlightSignature } from './utils/storage';
 import { ensureOurAirports, isOurAirportsReady } from './utils/ourairports';
 
 const TABS = [
   { id: 'flights', label: 'Flights' },
   { id: 'settings', label: 'Settings' },
+  { id: 'help', label: 'Help' },
 ];
 
 export default function App() {
@@ -171,6 +173,7 @@ export default function App() {
             onDataChange={refresh}
           />
         )}
+        {activeTab === 'help' && <Help />}
       </main>
     </div>
   );
