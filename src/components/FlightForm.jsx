@@ -33,6 +33,23 @@ const EMPTY_FLIGHT = {
   remarks: '',
 };
 
+function Field({ label, field, type = 'text', width = 'w-24', mono = false, placeholder = '', value, set }) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-[10px] text-gray-400 uppercase tracking-wider">{label}</span>
+      <input
+        type={type}
+        value={value ?? ''}
+        onChange={(e) => set(field, type === 'number' ? parseInt(e.target.value) || 0 : e.target.value)}
+        placeholder={placeholder}
+        className={`bg-navy-800 border border-navy-600 text-white px-2 py-1.5 text-sm ${width} ${
+          mono ? 'font-mono' : ''
+        } placeholder-gray-600 focus:border-amber-500 focus:outline-none`}
+      />
+    </label>
+  );
+}
+
 export default function FlightForm({ onSave, editFlight, onCancel, pilotName, primaryRole = 'pic', existingFlights = [] }) {
   const [flight, setFlight] = useState({ ...EMPTY_FLIGHT, picName: pilotName || '' });
 
@@ -134,23 +151,6 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
     }
   }
 
-  function Field({ label, field, type = 'text', width = 'w-24', mono = false, placeholder = '' }) {
-    return (
-      <label className="flex flex-col gap-1">
-        <span className="text-[10px] text-gray-400 uppercase tracking-wider">{label}</span>
-        <input
-          type={type}
-          value={flight[field] ?? ''}
-          onChange={(e) => set(field, type === 'number' ? parseInt(e.target.value) || 0 : e.target.value)}
-          placeholder={placeholder}
-          className={`bg-navy-800 border border-navy-600 text-white px-2 py-1.5 text-sm ${width} ${
-            mono ? 'font-mono' : ''
-          } placeholder-gray-600 focus:border-amber-500 focus:outline-none`}
-        />
-      </label>
-    );
-  }
-
   return (
     <form onSubmit={handleSubmit} className="bg-navy-800 border border-navy-600 p-4 mb-6">
       <div className="flex items-center justify-between mb-3">
@@ -165,13 +165,13 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
       </div>
 
       <div className="flex flex-wrap gap-3 mb-3">
-        <Field label="Date" field="date" placeholder="DD.MM.YYYY" width="w-28" mono />
-        <Field label="Dep ICAO" field="depICAO" placeholder="LKPR" width="w-20" mono />
-        <Field label="Off (UTC)" field="depTime" placeholder="HH:MM" width="w-20" mono />
-        <Field label="Arr ICAO" field="arrICAO" placeholder="LOWL" width="w-20" mono />
-        <Field label="On (UTC)" field="arrTime" placeholder="HH:MM" width="w-20" mono />
-        <Field label="Type" field="acType" placeholder="BE40" width="w-20" mono />
-        <Field label="Reg" field="reg" placeholder="OK-BEE" width="w-24" mono />
+        <Field label="Date" field="date" placeholder="DD.MM.YYYY" width="w-28" mono value={flight.date} set={set} />
+        <Field label="Dep ICAO" field="depICAO" placeholder="LKPR" width="w-20" mono value={flight.depICAO} set={set} />
+        <Field label="Off (UTC)" field="depTime" placeholder="HH:MM" width="w-20" mono value={flight.depTime} set={set} />
+        <Field label="Arr ICAO" field="arrICAO" placeholder="LOWL" width="w-20" mono value={flight.arrICAO} set={set} />
+        <Field label="On (UTC)" field="arrTime" placeholder="HH:MM" width="w-20" mono value={flight.arrTime} set={set} />
+        <Field label="Type" field="acType" placeholder="BE40" width="w-20" mono value={flight.acType} set={set} />
+        <Field label="Reg" field="reg" placeholder="OK-BEE" width="w-24" mono value={flight.reg} set={set} />
       </div>
 
       <div className="flex flex-wrap gap-4 mb-3 items-center">
@@ -191,24 +191,108 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
           />
           <span className="text-[11px] text-gray-300 uppercase tracking-wider">Single-pilot ME</span>
         </label>
-        <Field label="Multi-pilot time" field="multiPilotTime" placeholder="H:MM" width="w-24" mono />
-        <Field label="Total time" field="totalTime" placeholder="H:MM" width="w-20" mono />
-        <Field label="Night" field="nightTime" placeholder="H:MM" width="w-20" mono />
-        <Field label="IFR" field="ifrTime" placeholder="H:MM" width="w-20" mono />
-        <Field label="Ldg Day" field="landingsDay" type="number" width="w-16" />
-        <Field label="Ldg Night" field="landingsNight" type="number" width="w-16" />
+        <Field
+          label="Multi-pilot time"
+          field="multiPilotTime"
+          placeholder="H:MM"
+          width="w-24"
+          mono
+          value={flight.multiPilotTime}
+          set={set}
+        />
+        <Field
+          label="Total time"
+          field="totalTime"
+          placeholder="H:MM"
+          width="w-20"
+          mono
+          value={flight.totalTime}
+          set={set}
+        />
+        <Field
+          label="Night"
+          field="nightTime"
+          placeholder="H:MM"
+          width="w-20"
+          mono
+          value={flight.nightTime}
+          set={set}
+        />
+        <Field
+          label="IFR"
+          field="ifrTime"
+          placeholder="H:MM"
+          width="w-20"
+          mono
+          value={flight.ifrTime}
+          set={set}
+        />
+        <Field
+          label="Ldg Day"
+          field="landingsDay"
+          type="number"
+          width="w-16"
+          value={flight.landingsDay}
+          set={set}
+        />
+        <Field
+          label="Ldg Night"
+          field="landingsNight"
+          type="number"
+          width="w-16"
+          value={flight.landingsNight}
+          set={set}
+        />
       </div>
 
       <div className="flex flex-wrap gap-3 mb-3">
-        <Field label="PIC time" field="picTime" placeholder="H:MM" width="w-24" mono />
-        <Field label="Copilot time" field="copilotTime" placeholder="H:MM" width="w-24" mono />
-        <Field label="Dual time" field="dualTime" placeholder="H:MM" width="w-24" mono />
-        <Field label="Instructor time" field="instructorTime" placeholder="H:MM" width="w-28" mono />
+        <Field label="PIC time" field="picTime" placeholder="H:MM" width="w-24" mono value={flight.picTime} set={set} />
+        <Field
+          label="Copilot time"
+          field="copilotTime"
+          placeholder="H:MM"
+          width="w-24"
+          mono
+          value={flight.copilotTime}
+          set={set}
+        />
+        <Field
+          label="Dual time"
+          field="dualTime"
+          placeholder="H:MM"
+          width="w-24"
+          mono
+          value={flight.dualTime}
+          set={set}
+        />
+        <Field
+          label="Instructor time"
+          field="instructorTime"
+          placeholder="H:MM"
+          width="w-28"
+          mono
+          value={flight.instructorTime}
+          set={set}
+        />
       </div>
 
       <div className="flex flex-wrap gap-3 items-end">
-        <Field label="PIC name" field="picName" width="w-48" placeholder="Pilot name" />
-        <Field label="Remarks" field="remarks" width="w-64" placeholder="Notes" />
+        <Field
+          label="PIC name"
+          field="picName"
+          width="w-48"
+          placeholder="Pilot name"
+          value={flight.picName}
+          set={set}
+        />
+        <Field
+          label="Remarks"
+          field="remarks"
+          width="w-64"
+          placeholder="Notes"
+          value={flight.remarks}
+          set={set}
+        />
         <button
           type="submit"
           className="bg-amber-500 hover:bg-amber-400 text-navy-900 font-semibold px-6 py-1.5 text-sm uppercase tracking-wider transition-colors"

@@ -1,0 +1,44 @@
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773256908411}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773256908930}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773256908434}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773256908945}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:Field","message":"input focus","data":{"field":"date"},"timestamp":1773257171547}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"date","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257173094}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257173097}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"date","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257173107}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257173112}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"date","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257173267}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257173268}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"date","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257173269}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257173269}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"date","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257174408}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257174411}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"date","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257174412}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257174412}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"date","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257175444}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257175451}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"date","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257175452}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257175452}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"date","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257175525}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257175525}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"date","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257175526}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257175526}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:Field","message":"input blur","data":{"field":"date"},"timestamp":1773257176916}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:Field","message":"input focus","data":{"field":"depICAO"},"timestamp":1773257176918}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"depICAO","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257177645}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257177646}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"depICAO","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257177647}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257177648}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"depICAO","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257177756}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257177757}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"depICAO","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257177757}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257177758}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"depICAO","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257177878}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257177878}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"depICAO","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257177879}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257177882}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"depICAO","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257178511}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257178512}
+{"runId":"pre-fix","hypothesisId":"H1","location":"FlightForm.jsx:set","message":"set called in FlightForm","data":{"key":"depICAO","valueType":"string","hasEditFlight":false,"primaryRole":"copilot","activeElementTag":"INPUT","activeElementType":"text"},"timestamp":1773257178516}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:render","message":"FlightForm render","data":{},"timestamp":1773257178516}
+{"runId":"pre-fix","hypothesisId":"H2","location":"FlightForm.jsx:Field","message":"input blur","data":{"field":"depICAO"},"timestamp":1773257187778}
