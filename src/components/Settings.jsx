@@ -148,7 +148,8 @@ export default function Settings({ settings, onSettingsChange, onDataChange }) {
             </label>
           </div>
           <p className="text-[11px] text-gray-500">
-            Used for defaults and JetBee imports – decides whether multi-pilot jet time is counted as PIC or Copilot time.
+            Used for defaults and imports (JetBee / Flylog) – decides whether multi-pilot jet time is counted as PIC or
+            Copilot time. If you only fly single-pilot or don&apos;t care about this split, you can ignore this setting.
           </p>
         </div>
       </section>

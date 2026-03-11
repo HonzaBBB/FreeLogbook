@@ -21,6 +21,30 @@ const CREW_CAPTAIN_MAP = {
   HEL: 'Hermann',
 };
 
+function normalizeTimeString(value) {
+  const str = String(value || '').trim();
+  if (!str) return '';
+  if (parseTime(str) === 0) return '';
+  return str;
+}
+
+function parseFlylogDate(value) {
+  if (!value) return '';
+  const str = String(value).trim();
+  // Expecting YYYY-MM-DD
+  const [y, m, d] = str.split('-');
+  if (!y || !m || !d) return '';
+  return `${d.padStart(2, '0')}.${m.padStart(2, '0')}.${y}`;
+}
+
+function parseFlylogArrival(value) {
+  if (!value) return '';
+  const str = String(value).trim();
+  const parts = str.split('-').map((s) => s.trim()).filter(Boolean);
+  if (parts.length === 0) return '';
+  return parts[parts.length - 1].toUpperCase();
+}
+
 function parseJetBeeDate(value) {
   if (!value) return '';
   if (typeof value === 'number') {
@@ -97,7 +121,7 @@ function parseOneFile(XLSX, buffer, pilotName, primaryRole = 'pic') {
       singlePilotME: false,
       multiPilotTime: totalTime,
       totalTime,
-      picTime: isCopilotPrimary ? '0:00' : totalTime,
+      picTime: isCopilotPrimary ? '' : totalTime,
       nightTime: '0:00',
       ifrTime: totalTime,
       landingsDay: 1,
@@ -167,8 +191,117 @@ function recalcFlights(flights) {
   });
 }
 
+function mapFlylogRowToFlight(row, pilotName, primaryRole = 'pic') {
+  const status = String(row.STATUS || '').trim().toUpperCase();
+  if (status !== 'DONE') return null;
+
+  const role = primaryRole || 'pic';
+
+  const date = parseFlylogDate(row.DATE);
+  const depICAO = String(row.DEPARTURE_AIRPORT || '').trim().toUpperCase();
+  const arrICAO = parseFlylogArrival(row.ARRIVAL_AIRPORT);
+  const depTime = String(row.TIME_DEPARTURE || '').trim();
+  const arrTime = String(row.TIME_ARRIVAL || '').trim();
+
+  const totalTime = normalizeTimeString(row.DURATION_FLIGHT);
+  const landingsDay = parseInt(row.LDGS_DAY || '0', 10) || 0;
+  const landingsNight = parseInt(row.LDGS_NIGHT || '0', 10) || 0;
+
+  const acType = String(row.AIRCRAFT_TYPE || '').trim().toUpperCase();
+  const reg = String(row.AIRCRAFT_REGISTRATION || '').trim().toUpperCase();
+
+  const namePic = String(row.NAME_PIC || '').trim();
+  const nameSic = String(row.NAME_SIC || '').trim();
+  const nameInstructor = String(row.NAME_INSTRUCTOR || '').trim();
+
+  const remarks = String(row.REMARKS_AND_ENDORSEMENTS || '').trim();
+
+  const hasInstructor = !!nameInstructor;
+  const hasSic = !!nameSic;
+
+  const base = {
+    id: generateId(),
+    date,
+    depICAO,
+    depTime,
+    arrICAO,
+    arrTime,
+    acType,
+    reg,
+    singlePilotSE: false,
+    singlePilotME: false,
+    multiPilotTime: '',
+    totalTime,
+    picTime: '',
+    nightTime: '',
+    ifrTime: '',
+    landingsDay,
+    landingsNight,
+    picName: namePic || pilotName || '',
+    copilotTime: '',
+    dualTime: '',
+    instructorTime: '',
+    remarks,
+  };
+
+  // SE / ME + function logic
+  if (hasInstructor) {
+    // Logged as dual, not PIC
+    base.dualTime = totalTime;
+    base.instructorTime = '';
+    base.picTime = '';
+    base.copilotTime = '';
+  } else if (hasSic) {
+    // Multi-pilot flight
+    base.multiPilotTime = totalTime;
+    base.singlePilotSE = false;
+    base.singlePilotME = false;
+    if (role === 'copilot') {
+      base.picTime = '';
+      base.copilotTime = totalTime;
+    } else {
+      base.picTime = totalTime;
+      base.copilotTime = '';
+    }
+  } else {
+    // Single-pilot SEP style
+    base.multiPilotTime = '';
+    base.singlePilotSE = true;
+    base.singlePilotME = false;
+    if (role === 'copilot') {
+      base.picTime = '';
+      base.copilotTime = totalTime;
+    } else {
+      base.picTime = totalTime;
+      base.copilotTime = '';
+    }
+  }
+
+  try {
+    base.nightTime = normalizeTimeString(calculateNightTime(base));
+  } catch {
+    base.nightTime = '';
+  }
+
+  if (parseTime(base.nightTime) > 0 && base.landingsDay === 1) {
+    const arrMins =
+      parseTime(base.arrTime) < parseTime(base.depTime)
+        ? parseTime(base.arrTime) + 24 * 60
+        : parseTime(base.arrTime);
+    const totalMins = arrMins - parseTime(base.depTime);
+    const nightMins = parseTime(base.nightTime);
+    if (nightMins > totalMins * 0.5) {
+      base.landingsNight = 1;
+      base.landingsDay = 0;
+    }
+  }
+
+  return base;
+}
+
 export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', existingFlights = [] }) {
   const fileRef = useRef(null);
+  const csvRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [importing, setImporting] = useState(false);
   const [resolving, setResolving] = useState(false);
@@ -187,6 +320,56 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
       const buffer = await file.arrayBuffer();
       const flights = parseOneFile(XLSX, buffer, pilotName, primaryRole);
       allFlights.push(...flights);
+    }
+
+    const unknownCodes = findUnknownAirports(allFlights);
+
+    if (unknownCodes.length > 0) {
+      setResolving(true);
+      try {
+        const { resolved, unresolved } = await resolveUnknownAirports(unknownCodes);
+        setResolvedCount(resolved.length);
+        setUnknownAirports(unresolved);
+
+        if (resolved.length > 0) {
+          allFlights = recalcFlights(allFlights);
+        }
+      } catch {
+        setUnknownAirports(unknownCodes);
+        setResolvedCount(0);
+      }
+      setResolving(false);
+    } else {
+      setUnknownAirports([]);
+      setResolvedCount(0);
+    }
+
+    setAirportInputs({});
+    setPreview(allFlights);
+  }
+
+  async function handleFlylogChange(e) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const Papa = await import('papaparse');
+    let allFlights = [];
+
+    for (const file of files) {
+      const text = await file.text();
+      const result = Papa.parse(text, { header: true, skipEmptyLines: true });
+      const rows = Array.isArray(result.data) ? result.data : [];
+      for (const row of rows) {
+        const flight = mapFlylogRowToFlight(row, pilotName, primaryRole);
+        if (flight) {
+          allFlights.push(flight);
+        }
+      }
+    }
+
+    if (allFlights.length === 0) {
+      setPreview(null);
+      return;
     }
 
     const unknownCodes = findUnknownAirports(allFlights);
@@ -250,6 +433,7 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
     setAirportInputs({});
     setImporting(false);
     if (fileRef.current) fileRef.current.value = '';
+    if (csvRef.current) csvRef.current.value = '';
   }
 
   function handleCancel() {
@@ -257,6 +441,7 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
     setUnknownAirports([]);
     setAirportInputs({});
     if (fileRef.current) fileRef.current.value = '';
+    if (csvRef.current) csvRef.current.value = '';
   }
 
   const inputCls =
@@ -273,6 +458,17 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
             accept=".xls,.xlsx"
             multiple
             onChange={handleFileChange}
+            className="hidden"
+          />
+        </label>
+        <label className="bg-navy-700 border border-navy-600 hover:border-amber-500 text-white px-4 py-1.5 text-sm cursor-pointer transition-colors">
+          <span>Import Flylog CSV</span>
+          <input
+            ref={csvRef}
+            type="file"
+            accept=".csv"
+            multiple
+            onChange={handleFlylogChange}
             className="hidden"
           />
         </label>

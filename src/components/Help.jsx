@@ -20,8 +20,8 @@ export default function Help() {
         <li>
           <strong className="text-amber-400">Optional: choose your primary role</strong> – if you mostly fly as copilot/FO,
           you can change <span className="font-semibold">Settings → Primary role</span> from PIC to Copilot. This controls
-          whether multi-pilot jet time (including JetBee imports) is counted as PIC time or Copilot time. If you always fly
-          single-pilot or don&apos;t care about this split, you can simply ignore this setting.
+          whether multi-pilot jet time (including JetBee / Flylog imports) is counted as PIC time or Copilot time. If you
+          always fly single-pilot or don&apos;t care about this split, you can simply ignore this setting.
         </li>
       </ol>
 
