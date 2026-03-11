@@ -148,6 +148,7 @@ export default function App() {
             <ImportXLS
               onImport={handleImport}
               pilotName={settings.pilotName}
+              primaryRole={settings.primaryRole || 'pic'}
               existingFlights={flights}
             />
             {showForm && (
@@ -156,6 +157,7 @@ export default function App() {
                 editFlight={editFlight}
                 onCancel={handleCancelEdit}
                 pilotName={settings.pilotName}
+                primaryRole={settings.primaryRole || 'pic'}
                 existingFlights={flights}
               />
             )}

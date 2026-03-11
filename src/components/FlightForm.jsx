@@ -33,7 +33,7 @@ const EMPTY_FLIGHT = {
   remarks: '',
 };
 
-export default function FlightForm({ onSave, editFlight, onCancel, pilotName, existingFlights = [] }) {
+export default function FlightForm({ onSave, editFlight, onCancel, pilotName, primaryRole = 'pic', existingFlights = [] }) {
   const [flight, setFlight] = useState({ ...EMPTY_FLIGHT, picName: pilotName || '' });
 
   useEffect(() => {
@@ -52,13 +52,13 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, ex
         if (next.depTime && next.arrTime) {
           const total = calculateFlightDuration(next.depTime, next.arrTime);
           next.totalTime = total;
-          applyTypeDefaults(next);
+          applyTypeDefaults(next, primaryRole);
           recalcNight(next);
         }
       }
 
       if (key === 'acType') {
-        applyTypeDefaults(next);
+        applyTypeDefaults(next, primaryRole);
       }
 
       if (key === 'depICAO' || key === 'arrICAO' || key === 'date') {
@@ -69,18 +69,31 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, ex
     });
   }
 
-  function applyTypeDefaults(f) {
+  function applyTypeDefaults(f, primaryRole) {
+    const role = primaryRole || 'pic';
     if (isTurbine(f.acType)) {
       f.multiPilotTime = f.totalTime;
       f.ifrTime = f.totalTime;
       f.singlePilotSE = false;
       f.singlePilotME = false;
-      f.picTime = f.totalTime;
+      if (role === 'copilot') {
+        f.picTime = '0:00';
+        f.copilotTime = f.totalTime;
+      } else {
+        f.picTime = f.totalTime;
+        f.copilotTime = '';
+      }
     } else if (f.acType?.toUpperCase() === 'SEP' || (!isTurbine(f.acType) && f.acType)) {
       f.multiPilotTime = '';
       f.singlePilotSE = true;
       f.singlePilotME = false;
-      f.picTime = f.totalTime;
+      if (role === 'copilot') {
+        f.picTime = '0:00';
+        f.copilotTime = f.totalTime;
+      } else {
+        f.picTime = f.totalTime;
+        f.copilotTime = '';
+      }
     }
   }
 

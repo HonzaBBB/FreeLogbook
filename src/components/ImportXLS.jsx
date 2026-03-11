@@ -12,6 +12,15 @@ const REG_MAP = {
   ESC: { reg: 'OK-ESC', type: 'BE4W' },
 };
 
+const CREW_CAPTAIN_MAP = {
+  BRJ: 'Brzák',
+  VLM: 'Vláčilík',
+  SVK: 'Svoboda',
+  SHV: 'Schwarzmann',
+  STJ: 'Stůj',
+  HEL: 'Hermann',
+};
+
 function parseJetBeeDate(value) {
   if (!value) return '';
   if (typeof value === 'number') {
@@ -41,7 +50,7 @@ function parseOnOffField(value) {
   return { depTime: '', arrTime: '' };
 }
 
-function parseOneFile(XLSX, buffer, pilotName) {
+function parseOneFile(XLSX, buffer, pilotName, primaryRole = 'pic') {
   const workbook = XLSX.read(buffer, { type: 'array', cellDates: false });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '' });
@@ -70,6 +79,11 @@ function parseOneFile(XLSX, buffer, pilotName) {
     const { depTime, arrTime } = parseOnOffField(onOff);
     const totalTime = parseExcelDuration(timeVal);
 
+    const crewCode = codeStr.toUpperCase();
+    const captainFromCrew = CREW_CAPTAIN_MAP[crewCode];
+    const isCopilotPrimary = primaryRole === 'copilot';
+    const picName = isCopilotPrimary ? (captainFromCrew || '') : (pilotName || captainFromCrew || '');
+
     const flight = {
       id: generateId(),
       date: currentDate,
@@ -83,13 +97,13 @@ function parseOneFile(XLSX, buffer, pilotName) {
       singlePilotME: false,
       multiPilotTime: totalTime,
       totalTime,
-      picTime: totalTime,
+      picTime: isCopilotPrimary ? '0:00' : totalTime,
       nightTime: '0:00',
       ifrTime: totalTime,
       landingsDay: 1,
       landingsNight: 0,
-      picName: pilotName || '',
-      copilotTime: '',
+      picName,
+      copilotTime: isCopilotPrimary ? totalTime : '',
       dualTime: '',
       instructorTime: '',
       remarks: '',
@@ -153,7 +167,7 @@ function recalcFlights(flights) {
   });
 }
 
-export default function ImportXLS({ onImport, pilotName, existingFlights = [] }) {
+export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', existingFlights = [] }) {
   const fileRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [importing, setImporting] = useState(false);
@@ -171,7 +185,7 @@ export default function ImportXLS({ onImport, pilotName, existingFlights = [] })
 
     for (const file of files) {
       const buffer = await file.arrayBuffer();
-      const flights = parseOneFile(XLSX, buffer, pilotName);
+      const flights = parseOneFile(XLSX, buffer, pilotName, primaryRole);
       allFlights.push(...flights);
     }
 

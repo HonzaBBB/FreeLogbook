@@ -17,10 +17,16 @@ export default function Help() {
             <li>or manually using the “+ Add Flight” button.</li>
           </ul>
         </li>
+        <li>
+          <strong className="text-amber-400">Optional: choose your primary role</strong> – if you mostly fly as copilot/FO,
+          you can change <span className="font-semibold">Settings → Primary role</span> from PIC to Copilot. This controls
+          whether multi-pilot jet time (including JetBee imports) is counted as PIC time or Copilot time. If you always fly
+          single-pilot or don&apos;t care about this split, you can simply ignore this setting.
+        </li>
       </ol>
 
       <section className="pt-4 border-t border-navy-700 space-y-2">
-        <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Data & backups</h3>
+        <h2 className="text-xl font-semibold text-white tracking-wide">Data & backups</h2>
         <p className="text-sm text-gray-400">
           All your flights and settings are stored locally in your browser (localStorage). There is no server and no
           account – if you clear browser data, you will lose the logbook unless you keep a backup.

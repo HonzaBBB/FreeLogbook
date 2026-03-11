@@ -17,6 +17,7 @@ const CARRY_OVER_FIELDS = [
 
 export default function Settings({ settings, onSettingsChange, onDataChange }) {
   const [pilotName, setPilotName] = useState(settings.pilotName || '');
+  const [primaryRole, setPrimaryRole] = useState(settings.primaryRole || 'pic');
   const [carryOver, setCarryOver] = useState(settings.carryOver || {});
   const [newIcao, setNewIcao] = useState('');
   const [newLat, setNewLat] = useState('');
@@ -28,7 +29,7 @@ export default function Settings({ settings, onSettingsChange, onDataChange }) {
   const fileRef = useRef(null);
 
   function handleSavePilot() {
-    const updated = { ...settings, pilotName: pilotName.trim() };
+    const updated = { ...settings, pilotName: pilotName.trim(), primaryRole };
     saveSettings(updated);
     onSettingsChange(updated);
   }
@@ -96,6 +97,7 @@ export default function Settings({ settings, onSettingsChange, onDataChange }) {
     onDataChange();
     onSettingsChange({});
     setPilotName('');
+    setPrimaryRole('pic');
     setCarryOver({});
   }
 
@@ -120,6 +122,34 @@ export default function Settings({ settings, onSettingsChange, onDataChange }) {
           >
             Save
           </button>
+        </div>
+        <div className="mt-3 space-y-1">
+          <div className="text-[10px] text-gray-400 uppercase tracking-wider">Primary role</div>
+          <div className="flex gap-4 text-xs text-gray-300">
+            <label className="flex items-center gap-1 cursor-pointer">
+              <input
+                type="radio"
+                name="primaryRole"
+                value="pic"
+                checked={primaryRole === 'pic'}
+                onChange={() => setPrimaryRole('pic')}
+              />
+              <span>PIC (captain)</span>
+            </label>
+            <label className="flex items-center gap-1 cursor-pointer">
+              <input
+                type="radio"
+                name="primaryRole"
+                value="copilot"
+                checked={primaryRole === 'copilot'}
+                onChange={() => setPrimaryRole('copilot')}
+              />
+              <span>Copilot / FO</span>
+            </label>
+          </div>
+          <p className="text-[11px] text-gray-500">
+            Used for defaults and JetBee imports – decides whether multi-pilot jet time is counted as PIC or Copilot time.
+          </p>
         </div>
       </section>
 
