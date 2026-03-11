@@ -86,14 +86,15 @@ function parseOneFile(XLSX, buffer, pilotName, primaryRole = 'pic') {
     const row = rows[i];
     if (!row || row.length < 8) continue;
 
-    const [dateVal, regCode, code, route, , , onOff, timeVal] = row;
+    // JetBee layout: A = date, B = reg code, D = route, F = CREW (captain code), G = on/off, H = duration
+    const [dateVal, regCode, , route, , crewCode, onOff, timeVal] = row;
 
     if (dateVal && String(dateVal).trim() !== '') {
       currentDate = parseJetBeeDate(dateVal);
     }
 
-    const codeStr = String(code || '').trim();
-    if (!codeStr || codeStr === '-') continue;
+    const crewStr = String(crewCode || '').trim();
+    if (!crewStr || crewStr === '-') continue;
 
     const regKey = String(regCode || '').trim().toUpperCase();
     const regInfo = REG_MAP[regKey];
@@ -103,8 +104,8 @@ function parseOneFile(XLSX, buffer, pilotName, primaryRole = 'pic') {
     const { depTime, arrTime } = parseOnOffField(onOff);
     const totalTime = parseExcelDuration(timeVal);
 
-    const crewCode = codeStr.toUpperCase();
-    const captainFromCrew = CREW_CAPTAIN_MAP[crewCode];
+    const crewKey = crewStr.toUpperCase();
+    const captainFromCrew = CREW_CAPTAIN_MAP[crewKey];
     const isCopilotPrimary = primaryRole === 'copilot';
     const picName = isCopilotPrimary ? (captainFromCrew || '') : (pilotName || captainFromCrew || '');
 
