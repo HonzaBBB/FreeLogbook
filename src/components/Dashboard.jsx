@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import { parseTime, parseDateDMY } from '../utils/timeUtils';
 
-function StatCard({ label, value, unit }) {
+function StatCard({ label, value, unit, compact = false }) {
   return (
-    <div className="bg-navy-800 border border-navy-600 px-4 py-3">
-      <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">{label}</div>
-      <div className="font-mono text-xl text-amber-400 font-semibold">
+    <div className={`bg-navy-800 border border-navy-600 ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
+      <div className={`${compact ? 'text-[10px]' : 'text-xs'} text-gray-400 uppercase tracking-wider mb-1`}>{label}</div>
+      <div className={`font-mono text-amber-400 font-semibold ${compact ? 'text-lg' : 'text-xl'}`}>
         {value}
-        {unit && <span className="text-sm text-gray-400 ml-1">{unit}</span>}
+        {unit && <span className={`${compact ? 'text-xs' : 'text-sm'} text-gray-400 ml-1`}>{unit}</span>}
       </div>
     </div>
   );
@@ -19,7 +19,7 @@ function formatHours(totalMinutes) {
   return `${h}:${m.toString().padStart(2, '0')}`;
 }
 
-export default function Dashboard({ flights, carryOver = {} }) {
+export default function Dashboard({ flights, carryOver = {}, t = (key) => key }) {
   const stats = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getUTCMonth();
@@ -77,14 +77,22 @@ export default function Dashboard({ flights, carryOver = {} }) {
   }, [flights, carryOver]);
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-6">
-      <StatCard label="Total hours" value={stats.totalHours} />
-      <StatCard label="PIC hours" value={stats.picHours} />
-      <StatCard label="Night hours" value={stats.nightHours} />
-      <StatCard label="IFR hours" value={stats.ifrHours} />
-      <StatCard label="Total flights" value={stats.totalFlights} />
-      <StatCard label="This month" value={stats.monthFlights} unit={`flights · ${stats.monthHours}`} />
-      <StatCard label="This year" value={stats.yearFlights} unit={`flights · ${stats.yearHours}`} />
-    </div>
+    <>
+      <div className="grid grid-cols-1 gap-2 mb-4 sm:hidden">
+        <StatCard label={t('dashboard.totalHours')} value={stats.totalHours} compact />
+        <StatCard label={t('dashboard.picHours')} value={stats.picHours} compact />
+        <StatCard label={t('dashboard.nightHours')} value={stats.nightHours} compact />
+        <StatCard label={t('dashboard.totalFlights')} value={stats.totalFlights} compact />
+      </div>
+      <div className="hidden sm:grid grid-cols-2 lg:grid-cols-5 gap-2 mb-6">
+        <StatCard label={t('dashboard.totalHours')} value={stats.totalHours} />
+        <StatCard label={t('dashboard.picHours')} value={stats.picHours} />
+        <StatCard label={t('dashboard.nightHours')} value={stats.nightHours} />
+        <StatCard label={t('dashboard.ifrHours')} value={stats.ifrHours} />
+        <StatCard label={t('dashboard.totalFlights')} value={stats.totalFlights} />
+        <StatCard label={t('dashboard.thisMonth')} value={stats.monthFlights} unit={`${t('dashboard.flightsUnit')} · ${stats.monthHours}`} />
+        <StatCard label={t('dashboard.thisYear')} value={stats.yearFlights} unit={`${t('dashboard.flightsUnit')} · ${stats.yearHours}`} />
+      </div>
+    </>
   );
 }

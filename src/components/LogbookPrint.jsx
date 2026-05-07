@@ -23,7 +23,7 @@ function fmt(mins) {
   return formatTime(mins);
 }
 
-export default function LogbookPrint({ flights, onClose, carryOver = {} }) {
+export default function LogbookPrint({ flights, onClose, carryOver = {}, t = (key) => key }) {
   const pages = useMemo(() => chunk(flights, ROWS_PER_PAGE), [flights]);
 
   const runningTotals = useMemo(() => {
@@ -108,20 +108,22 @@ export default function LogbookPrint({ flights, onClose, carryOver = {} }) {
     <div className="logbook-print-overlay fixed inset-0 bg-white z-50 overflow-auto print:static">
       <div className="no-print p-4 bg-gray-100 flex items-center justify-between sticky top-0 z-10 border-b">
         <span className="text-sm text-gray-600">
-          Print preview — {flights.length} flights, {pages.length} pages
+          {t('print.preview', `Print preview - ${flights.length} flights, ${pages.length} pages`)
+            .replace('{flights}', flights.length)
+            .replace('{pages}', pages.length)}
         </span>
         <div className="flex gap-2">
           <button
             onClick={() => window.print()}
             className="bg-blue-600 text-white px-4 py-1.5 text-sm font-semibold hover:bg-blue-500"
           >
-            Print / Save PDF
+            {t('print.printSavePdf')}
           </button>
           <button
             onClick={onClose}
             className="bg-gray-300 text-gray-700 px-4 py-1.5 text-sm hover:bg-gray-200"
           >
-            Close
+            {t('print.close')}
           </button>
         </div>
       </div>
@@ -129,41 +131,41 @@ export default function LogbookPrint({ flights, onClose, carryOver = {} }) {
       {pages.map((page, pageIdx) => (
         <div key={pageIdx} className="logbook-page">
           <div className="page-header">
-            <span>PILOT LOGBOOK</span>
-            <span>Page {pageIdx + 1} / {pages.length}</span>
+            <span>{t('print.title')}</span>
+            <span>{t('print.page', `Page ${pageIdx + 1} / ${pages.length}`).replace('{current}', pageIdx + 1).replace('{total}', pages.length)}</span>
           </div>
 
           <table className="logbook-table">
             <thead>
               <tr className="header-main">
-                <th rowSpan="2" className="col-date">1<br /><small>DATE</small></th>
-                <th colSpan="2">2 — DEPARTURE</th>
-                <th colSpan="2">3 — ARRIVAL</th>
-                <th colSpan="2">4 — AIRCRAFT</th>
-                <th colSpan="3">5 — FLIGHT TIME</th>
-                <th rowSpan="2" className="col-total">6<br /><small>TOTAL<br />TIME</small></th>
-                <th rowSpan="2" className="col-pic">7<br /><small>PIC<br />NAME</small></th>
-                <th colSpan="2">8 — LANDINGS</th>
-                <th colSpan="2">9 — CONDITIONS</th>
-                <th rowSpan="2" className="col-pictime">10<br /><small>PIC<br />TIME</small></th>
-                <th rowSpan="2" className="col-pic">11<br /><small>COPILOT</small></th>
-                <th rowSpan="2" className="col-pic">12<br /><small>DUAL</small></th>
-                <th rowSpan="2" className="col-pic">13<br /><small>INSTRUCTOR</small></th>
-                <th rowSpan="2" className="col-remarks">14<br /><small>REMARKS</small></th>
+                <th rowSpan="2" className="col-date">1<br /><small>{t('print.headers.date')}</small></th>
+                <th colSpan="2">2 — {t('print.headers.departure')}</th>
+                <th colSpan="2">3 — {t('print.headers.arrival')}</th>
+                <th colSpan="2">4 — {t('print.headers.aircraft')}</th>
+                <th colSpan="3">5 — {t('print.headers.flightTime')}</th>
+                <th rowSpan="2" className="col-total">6<br /><small>{t('print.headers.totalTime')}</small></th>
+                <th rowSpan="2" className="col-pic">7<br /><small>{t('print.headers.picName')}</small></th>
+                <th colSpan="2">8 — {t('print.headers.landings')}</th>
+                <th colSpan="2">9 — {t('print.headers.conditions')}</th>
+                <th rowSpan="2" className="col-pictime">10<br /><small>{t('print.headers.picTime')}</small></th>
+                <th rowSpan="2" className="col-pic">11<br /><small>{t('print.headers.copilot')}</small></th>
+                <th rowSpan="2" className="col-pic">12<br /><small>{t('print.headers.dual')}</small></th>
+                <th rowSpan="2" className="col-pic">13<br /><small>{t('print.headers.instructor')}</small></th>
+                <th rowSpan="2" className="col-remarks">14<br /><small>{t('print.headers.remarks')}</small></th>
               </tr>
               <tr className="header-sub">
-                <th><small>AERODROME</small></th>
-                <th><small>TIME<br />UTC</small></th>
-                <th><small>AERODROME</small></th>
-                <th><small>TIME<br />UTC</small></th>
-                <th><small>TYPE</small></th>
+                <th><small>{t('print.headers.aerodrome')}</small></th>
+                <th><small>{t('print.headers.timeUtc')}</small></th>
+                <th><small>{t('print.headers.aerodrome')}</small></th>
+                <th><small>{t('print.headers.timeUtc')}</small></th>
+                <th><small>{t('print.headers.type')}</small></th>
                 <th><small>REG</small></th>
                 <th><small>SP<br />SE</small></th>
                 <th><small>SP<br />ME</small></th>
-                <th><small>MULTI-<br />PILOT</small></th>
-                <th><small>DAY</small></th>
-                <th><small>NIGHT</small></th>
-                <th><small>NIGHT</small></th>
+                <th><small>{t('print.headers.multiPilot')}</small></th>
+                <th><small>{t('print.headers.day')}</small></th>
+                <th><small>{t('print.headers.night')}</small></th>
+                <th><small>{t('print.headers.night')}</small></th>
                 <th><small>IFR</small></th>
               </tr>
             </thead>
@@ -202,14 +204,14 @@ export default function LogbookPrint({ flights, onClose, carryOver = {} }) {
               ))}
             </tbody>
             <tfoot>
-              <SummaryRow label="CELKEM NA TÉTO STRANĚ" data={runningTotals[pageIdx].page} />
-              <SummaryRow label="CELKEM Z PŘEDCHOZÍCH STRAN" data={runningTotals[pageIdx].prev} />
-              <SummaryRow label="CELKOVÁ DOBA" data={runningTotals[pageIdx].grand} bold />
+              <SummaryRow label={t('print.summary.pageTotal')} data={runningTotals[pageIdx].page} />
+              <SummaryRow label={t('print.summary.prevTotal')} data={runningTotals[pageIdx].prev} />
+              <SummaryRow label={t('print.summary.grandTotal')} data={runningTotals[pageIdx].grand} bold />
             </tfoot>
           </table>
           <div className="logbook-signature">
             <div className="logbook-signature-text">
-              I hereby certify that the entries in this log are true.
+              {t('print.certification')}
             </div>
             <div className="logbook-signature-line" />
           </div>

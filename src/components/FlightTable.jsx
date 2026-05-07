@@ -2,32 +2,31 @@ import { useState, useMemo } from 'react';
 import { parseTime, parseDateDMY } from '../utils/timeUtils';
 import { isKnownAirport } from '../utils/airports';
 
-const COLUMNS = [
-  { key: 'date', label: 'Date', mono: true },
-  { key: 'depICAO', label: 'Dep', mono: true },
-  { key: 'depTime', label: 'Off', mono: true },
-  { key: 'arrICAO', label: 'Arr', mono: true },
-  { key: 'arrTime', label: 'On', mono: true },
-  { key: 'acType', label: 'Type', mono: true },
-  { key: 'reg', label: 'Reg', mono: true },
-  { key: 'singlePilotSE', label: 'SP SE', mono: true, isBool: true },
-  { key: 'singlePilotME', label: 'SP ME', mono: true, isBool: true },
-  { key: 'multiPilotTime', label: 'Multi', mono: true },
-  { key: 'totalTime', label: 'Total', mono: true },
-  { key: 'nightTime', label: 'Night', mono: true },
-  { key: 'ifrTime', label: 'IFR', mono: true },
-  { key: 'landingsDay', label: 'L/D' },
-  { key: 'landingsNight', label: 'L/N' },
-  { key: 'copilotTime', label: 'Copilot', mono: true },
-  { key: 'dualTime', label: 'Dual', mono: true },
-  { key: 'instructorTime', label: 'Instructor', mono: true },
-  { key: 'remarks', label: 'Remarks' },
-];
-
-export default function FlightTable({ flights, onDelete, onEdit }) {
+export default function FlightTable({ flights, onDelete, onEdit, t = (key) => key }) {
   const [sortKey, setSortKey] = useState('date');
   const [sortAsc, setSortAsc] = useState(true);
   const [filter, setFilter] = useState('');
+  const columns = [
+    { key: 'date', label: t('logbook.columns.date'), mono: true },
+    { key: 'depICAO', label: t('logbook.columns.dep'), mono: true },
+    { key: 'depTime', label: t('logbook.columns.off'), mono: true },
+    { key: 'arrICAO', label: t('logbook.columns.arr'), mono: true },
+    { key: 'arrTime', label: t('logbook.columns.on'), mono: true },
+    { key: 'acType', label: t('logbook.columns.type'), mono: true },
+    { key: 'reg', label: t('logbook.columns.reg'), mono: true },
+    { key: 'singlePilotSE', label: t('logbook.columns.spSe'), mono: true, isBool: true },
+    { key: 'singlePilotME', label: t('logbook.columns.spMe'), mono: true, isBool: true },
+    { key: 'multiPilotTime', label: t('logbook.columns.multi'), mono: true },
+    { key: 'totalTime', label: t('logbook.columns.total'), mono: true },
+    { key: 'nightTime', label: t('logbook.columns.night'), mono: true },
+    { key: 'ifrTime', label: t('logbook.columns.ifr'), mono: true },
+    { key: 'landingsDay', label: t('logbook.columns.landingsDay') },
+    { key: 'landingsNight', label: t('logbook.columns.landingsNight') },
+    { key: 'copilotTime', label: t('logbook.columns.copilot'), mono: true },
+    { key: 'dualTime', label: t('logbook.columns.dual'), mono: true },
+    { key: 'instructorTime', label: t('logbook.columns.instructor'), mono: true },
+    { key: 'remarks', label: t('logbook.columns.remarks') },
+  ];
 
   const filtered = useMemo(() => {
     if (!filter.trim()) return flights;
@@ -82,22 +81,63 @@ export default function FlightTable({ flights, onDelete, onEdit }) {
 
   return (
     <div className="mb-6">
-      <div className="mb-3 flex items-center gap-3">
+      <div className="mb-3 flex flex-col sm:flex-row sm:items-center gap-3">
         <input
           type="text"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filter flights... (ICAO, date, reg, type)"
-          className="bg-navy-800 border border-navy-600 text-white px-3 py-1.5 text-sm font-mono w-72 placeholder-gray-500 focus:border-amber-500 focus:outline-none"
+          placeholder={t('logbook.filterPlaceholder')}
+          className="bg-navy-800 border border-navy-600 text-white px-3 py-2 text-sm font-mono w-full sm:w-72 placeholder-gray-500 focus:border-amber-500 focus:outline-none"
         />
-        <span className="text-xs text-gray-500">{sorted.length} flights</span>
+        <span className="text-xs text-gray-500">{t('logbook.flightsCount', `${sorted.length} flights`).replace('{count}', sorted.length)}</span>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="md:hidden space-y-2">
+        {sorted.map((flight) => (
+          <article key={flight.id} className="bg-navy-800 border border-navy-600 p-3">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <div className="text-xs text-gray-400 uppercase tracking-wider">{flight.date || '—'}</div>
+                <div className="font-mono text-sm text-white">{flight.depICAO || '----'} -> {flight.arrICAO || '----'}</div>
+              </div>
+              <div className="font-mono text-sm text-amber-400">{flight.totalTime || '0:00'}</div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+              <div className="text-gray-400">{t('logbook.columns.off')}: <span className="text-gray-200 font-mono">{flight.depTime || '—'}</span></div>
+              <div className="text-gray-400">{t('logbook.columns.on')}: <span className="text-gray-200 font-mono">{flight.arrTime || '—'}</span></div>
+              <div className="text-gray-400">{t('logbook.columns.type')}: <span className="text-gray-200 font-mono">{flight.acType || '—'}</span></div>
+              <div className="text-gray-400">{t('logbook.columns.reg')}: <span className="text-gray-200 font-mono">{flight.reg || '—'}</span></div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onEdit(flight)}
+                className="flex-1 bg-navy-700 border border-navy-600 text-gray-200 px-3 py-2 text-xs uppercase tracking-wider"
+              >
+                {t('logbook.edit')}
+              </button>
+              <button
+                onClick={() => {
+                  if (window.confirm(t('logbook.deleteConfirm'))) onDelete(flight.id);
+                }}
+                className="flex-1 bg-navy-700 border border-navy-600 text-gray-200 px-3 py-2 text-xs uppercase tracking-wider"
+              >
+                {t('logbook.delete')}
+              </button>
+            </div>
+          </article>
+        ))}
+        {sorted.length === 0 && (
+          <div className="px-4 py-8 text-center text-gray-500 border border-navy-700">
+            {t('logbook.emptyState')}
+          </div>
+        )}
+      </div>
+
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-xs border-collapse">
           <thead>
             <tr className="border-b border-navy-600">
-              {COLUMNS.map((col) => (
+              {columns.map((col) => (
                 <th
                   key={col.key}
                   onClick={() => handleSort(col.key)}
@@ -118,7 +158,7 @@ export default function FlightTable({ flights, onDelete, onEdit }) {
                 key={flight.id}
                 className="border-b border-navy-700 hover:bg-navy-800 transition-colors"
               >
-                {COLUMNS.map((col) => {
+                {columns.map((col) => {
                   const value = flight[col.key];
                   const isIcao = col.key === 'depICAO' || col.key === 'arrICAO';
                   const unknown = isIcao && value && !isKnownAirport(value);
@@ -132,7 +172,7 @@ export default function FlightTable({ flights, onDelete, onEdit }) {
                       }`}
                     >
                       {unknown && (
-                        <span className="text-amber-500 mr-1" title="Unknown airport — add coords in Settings">
+                        <span className="text-amber-500 mr-1" title={t('logbook.unknownAirportTitle')}>
                           ⚠
                         </span>
                       )}
@@ -144,16 +184,16 @@ export default function FlightTable({ flights, onDelete, onEdit }) {
                   <button
                     onClick={() => onEdit(flight)}
                     className="text-gray-500 hover:text-amber-400 mr-2 text-xs"
-                    title="Edit"
+                    title={t('logbook.edit')}
                   >
                     ✎
                   </button>
                   <button
                     onClick={() => {
-                      if (window.confirm('Delete this flight?')) onDelete(flight.id);
+                      if (window.confirm(t('logbook.deleteConfirm'))) onDelete(flight.id);
                     }}
                     className="text-gray-500 hover:text-red-400 text-xs"
-                    title="Delete"
+                    title={t('logbook.delete')}
                   >
                     ✕
                   </button>
@@ -162,8 +202,8 @@ export default function FlightTable({ flights, onDelete, onEdit }) {
             ))}
             {sorted.length === 0 && (
               <tr>
-                <td colSpan={COLUMNS.length + 1} className="px-4 py-8 text-center text-gray-500">
-                  No flights yet. Add a flight manually or import from XLS.
+                <td colSpan={columns.length + 1} className="px-4 py-8 text-center text-gray-500">
+                  {t('logbook.emptyState')}
                 </td>
               </tr>
             )}

@@ -1,42 +1,112 @@
 # FreeLogbook — Pilot Logbook
 
-Minimalist web-based pilot logbook for professional pilots. No backend, no subscriptions — all data stored locally in your browser.
+Minimalist web-based pilot logbook for professional pilots.
 
-## Quick Start
+Current production is deployed on Netlify.
+
+## Project Status
+
+- **Current mode:** local-first app (browser `localStorage`)
+- **Current production hosting:** Netlify
+- **Current backend:** none
+- **Planned next step:** Supabase auth + cloud sync (MVP)
+
+## Features
+
+- Flight log table (sortable, filterable, ICAO-style columns)
+- Manual flight entry with smart defaults
+- JetBee XLS import
+- Night time calculation (NOAA civil twilight)
+- Printable logbook (Czech CAA / ICAO format, A4 landscape)
+- Dashboard stats (totals, PIC, night, IFR, monthly/yearly)
+- Settings (pilot info, custom airports, JSON backup/restore)
+
+## Tech Stack
+
+- React 18 + Vite
+- Tailwind CSS
+- SheetJS (`xlsx`) for import
+- Leaflet / React-Leaflet (map view)
+- `localStorage` persistence
+
+## Local Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Then open `http://localhost:5173` in your browser.
+Open `http://localhost:5173`.
 
-## Build for Production
+## Build
 
 ```bash
 npm run build
 ```
 
-The `dist/` folder is ready to deploy to Netlify, GitHub Pages, or any static hosting.
+Output is generated into `dist/`.
 
-## Features
+## Deployment (Netlify)
 
-- **Flight log table** — sortable, filterable, all ICAO logbook columns
-- **Manual flight entry** — smart defaults for turbine (BE40/BE4W) and SEP aircraft
-- **JetBee XLS import** — parse monthly salary reports from JetBee scheduling system
-- **Night time calculation** — automatic NOAA civil twilight algorithm based on airport coordinates
-- **Printable logbook** — official Czech CAA / ICAO format, landscape A4, via browser print dialog
-- **Statistics dashboard** — total hours, PIC, night, IFR, monthly/yearly stats
-- **Settings** — pilot name, custom airports, JSON backup/restore
+This app is deployed as a static site.
 
-## Tech Stack
+Recommended Netlify settings:
 
-- React 18 + Vite
-- Tailwind CSS
-- SheetJS (xlsx) for XLS/XLSX import
-- localStorage for all data persistence
-- No backend, no authentication
+- **Build command:** `npm run build`
+- **Publish directory:** `dist`
+- **Node version:** `20` (recommended for consistency)
 
-## Data
+## Environment Variables
 
-All flight data is stored in `localStorage`. Use Settings → Export JSON Backup regularly to avoid data loss.
+### Current (local-only mode)
+
+No required env vars.
+
+### Planned (Supabase MVP: login + sync)
+
+When cloud sync is enabled, add:
+
+```bash
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+```
+
+Important:
+
+- Never expose Supabase `service_role` key in frontend.
+- Keep `anon` key only in client app.
+
+## Authentication URL Configuration (for Supabase)
+
+When enabling auth:
+
+- Set **Site URL** to production domain (Netlify custom domain)
+- Add redirect URLs for:
+  - local dev (`http://localhost:5173/*`)
+  - production (`https://your-domain/*`)
+
+## Data & Backups
+
+All current data is stored in browser `localStorage`.
+
+To avoid data loss:
+
+1. Go to **Settings → Export JSON Backup**
+2. Store backups outside browser (cloud disk / local file storage)
+3. Test restore periodically using **Settings → Import JSON Backup**
+
+## Security Notes
+
+- In local-only mode, there is no server-side protection (single-user browser storage).
+- After moving to Supabase, Row Level Security (RLS) must be enabled for all user data tables.
+- Do not rely on frontend filtering for data isolation.
+
+## Troubleshooting
+
+- If app is blank after deploy, verify Netlify publish directory is `dist`.
+- If imports fail, verify XLS format from JetBee and browser console errors.
+- If data "disappears", check whether browser storage was cleared or app opened in a different browser profile.
+
+## License
+
+Free to use and modify.

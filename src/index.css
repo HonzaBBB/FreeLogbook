@@ -182,3 +182,23 @@ body {
     margin: 0;
   }
 }
+
+/* =========================================
+   Flight map — malé značky letišť (Leaflet divIcon)
+   ========================================= */
+
+.flight-map-airport-dot {
+  background: transparent !important;
+  border: none !important;
+}
+
+.flight-map-airport-dot__inner {
+  display: block;
+  width: 6px;
+  height: 6px;
+  margin: 2px;
+  border-radius: 9999px;
+  background: #f59e0b;
+  border: 1px solid #0f172a;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+}

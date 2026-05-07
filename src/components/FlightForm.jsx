@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { calculateFlightDuration } from '../utils/timeUtils';
 import { calculateNightTime } from '../utils/nightTime';
 import { generateId, findDuplicateFlight } from '../utils/storage';
+import { isKnownAirport } from '../utils/airports';
+import { resolveUnknownAirports } from '../utils/ourairports';
+
+const ICAO_PATTERN = /^[A-Z]{4}$/;
 
 const TURBINE_TYPES = ['BE40', 'BE4W'];
 
@@ -34,15 +38,16 @@ const EMPTY_FLIGHT = {
 };
 
 function Field({ label, field, type = 'text', width = 'w-24', mono = false, placeholder = '', value, set }) {
+  const responsiveWidth = width.startsWith('sm:') ? width : `sm:${width}`;
   return (
-    <label className="flex flex-col gap-1">
+    <label className={`flex flex-col gap-1 w-full ${responsiveWidth}`}>
       <span className="text-[10px] text-gray-400 uppercase tracking-wider">{label}</span>
       <input
         type={type}
         value={value ?? ''}
         onChange={(e) => set(field, type === 'number' ? parseInt(e.target.value) || 0 : e.target.value)}
         placeholder={placeholder}
-        className={`bg-navy-800 border border-navy-600 text-white px-2 py-1.5 text-sm ${width} ${
+        className={`bg-navy-800 border border-navy-600 text-white px-2 py-2 text-sm w-full ${
           mono ? 'font-mono' : ''
         } placeholder-gray-600 focus:border-amber-500 focus:outline-none`}
       />
@@ -50,7 +55,7 @@ function Field({ label, field, type = 'text', width = 'w-24', mono = false, plac
   );
 }
 
-export default function FlightForm({ onSave, editFlight, onCancel, pilotName, primaryRole = 'pic', existingFlights = [] }) {
+export default function FlightForm({ onSave, editFlight, onCancel, pilotName, primaryRole = 'pic', existingFlights = [], t = (key) => key }) {
   const [flight, setFlight] = useState({ ...EMPTY_FLIGHT, picName: pilotName || '' });
 
   useEffect(() => {
@@ -124,7 +129,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
     }
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!flight.date || !flight.depICAO || !flight.arrICAO) return;
 
@@ -140,9 +145,21 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
     const duplicate = findDuplicateFlight(existingFlights, saved, editFlight?.id);
     if (duplicate) {
       const ok = window.confirm(
-        `A flight with the same date, route (${saved.depICAO} → ${saved.arrICAO}) and times already exists. Add anyway?`,
+        t('flightForm.duplicateConfirm', `A flight with the same date, route (${saved.depICAO} → ${saved.arrICAO}) and times already exists. Add anyway?`),
       );
       if (!ok) return;
+    }
+
+    const icaoCandidates = [saved.depICAO, saved.arrICAO].filter(Boolean);
+    const unknownIcaos = [...new Set(icaoCandidates)].filter(
+      (code) => ICAO_PATTERN.test(code) && !isKnownAirport(code),
+    );
+    if (unknownIcaos.length > 0) {
+      try {
+        await resolveUnknownAirports(unknownIcaos);
+      } catch {
+        // Při chybě sítě jen pokračujeme v uložení letu
+      }
     }
 
     onSave(saved);
@@ -155,23 +172,23 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
     <form onSubmit={handleSubmit} className="bg-navy-800 border border-navy-600 p-4 mb-6">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
-          {editFlight ? 'Edit flight' : 'Add flight'}
+          {editFlight ? t('flightForm.editFlight') : t('flightForm.addFlight')}
         </h3>
         {editFlight && (
           <button type="button" onClick={onCancel} className="text-xs text-gray-400 hover:text-white">
-            Cancel
+            {t('flightForm.cancel')}
           </button>
         )}
       </div>
 
       <div className="flex flex-wrap gap-3 mb-3">
-        <Field label="Date" field="date" placeholder="DD.MM.YYYY" width="w-28" mono value={flight.date} set={set} />
-        <Field label="Dep ICAO" field="depICAO" placeholder="LKPR" width="w-20" mono value={flight.depICAO} set={set} />
-        <Field label="Off (UTC)" field="depTime" placeholder="HH:MM" width="w-20" mono value={flight.depTime} set={set} />
-        <Field label="Arr ICAO" field="arrICAO" placeholder="LOWL" width="w-20" mono value={flight.arrICAO} set={set} />
-        <Field label="On (UTC)" field="arrTime" placeholder="HH:MM" width="w-20" mono value={flight.arrTime} set={set} />
-        <Field label="Type" field="acType" placeholder="BE40" width="w-20" mono value={flight.acType} set={set} />
-        <Field label="Reg" field="reg" placeholder="OK-BEE" width="w-24" mono value={flight.reg} set={set} />
+        <Field label={t('flightForm.fields.date')} field="date" placeholder="DD.MM.YYYY" width="w-28" mono value={flight.date} set={set} />
+        <Field label={t('flightForm.fields.depIcao')} field="depICAO" placeholder="LKPR" width="w-20" mono value={flight.depICAO} set={set} />
+        <Field label={t('flightForm.fields.offUtc')} field="depTime" placeholder="HH:MM" width="w-20" mono value={flight.depTime} set={set} />
+        <Field label={t('flightForm.fields.arrIcao')} field="arrICAO" placeholder="LOWL" width="w-20" mono value={flight.arrICAO} set={set} />
+        <Field label={t('flightForm.fields.onUtc')} field="arrTime" placeholder="HH:MM" width="w-20" mono value={flight.arrTime} set={set} />
+        <Field label={t('flightForm.fields.type')} field="acType" placeholder="BE40" width="w-20" mono value={flight.acType} set={set} />
+        <Field label={t('flightForm.fields.reg')} field="reg" placeholder="OK-BEE" width="w-24" mono value={flight.reg} set={set} />
       </div>
 
       <div className="flex flex-wrap gap-4 mb-3 items-center">
@@ -181,7 +198,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
             checked={!!flight.singlePilotSE}
             onChange={(e) => set('singlePilotSE', e.target.checked)}
           />
-          <span className="text-[11px] text-gray-300 uppercase tracking-wider">Single-pilot SE</span>
+          <span className="text-[11px] text-gray-300 uppercase tracking-wider">{t('flightForm.fields.singlePilotSe')}</span>
         </label>
         <label className="flex items-center gap-2">
           <input
@@ -189,10 +206,10 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
             checked={!!flight.singlePilotME}
             onChange={(e) => set('singlePilotME', e.target.checked)}
           />
-          <span className="text-[11px] text-gray-300 uppercase tracking-wider">Single-pilot ME</span>
+          <span className="text-[11px] text-gray-300 uppercase tracking-wider">{t('flightForm.fields.singlePilotMe')}</span>
         </label>
         <Field
-          label="Multi-pilot time"
+          label={t('flightForm.fields.multiPilotTime')}
           field="multiPilotTime"
           placeholder="H:MM"
           width="w-24"
@@ -201,7 +218,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
           set={set}
         />
         <Field
-          label="Total time"
+          label={t('flightForm.fields.totalTime')}
           field="totalTime"
           placeholder="H:MM"
           width="w-20"
@@ -210,7 +227,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
           set={set}
         />
         <Field
-          label="Night"
+          label={t('flightForm.fields.night')}
           field="nightTime"
           placeholder="H:MM"
           width="w-20"
@@ -219,7 +236,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
           set={set}
         />
         <Field
-          label="IFR"
+          label={t('flightForm.fields.ifr')}
           field="ifrTime"
           placeholder="H:MM"
           width="w-20"
@@ -228,7 +245,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
           set={set}
         />
         <Field
-          label="Ldg Day"
+          label={t('flightForm.fields.ldgDay')}
           field="landingsDay"
           type="number"
           width="w-16"
@@ -236,7 +253,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
           set={set}
         />
         <Field
-          label="Ldg Night"
+          label={t('flightForm.fields.ldgNight')}
           field="landingsNight"
           type="number"
           width="w-16"
@@ -246,9 +263,9 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
       </div>
 
       <div className="flex flex-wrap gap-3 mb-3">
-        <Field label="PIC time" field="picTime" placeholder="H:MM" width="w-24" mono value={flight.picTime} set={set} />
+        <Field label={t('flightForm.fields.picTime')} field="picTime" placeholder="H:MM" width="w-24" mono value={flight.picTime} set={set} />
         <Field
-          label="Copilot time"
+          label={t('flightForm.fields.copilotTime')}
           field="copilotTime"
           placeholder="H:MM"
           width="w-24"
@@ -257,7 +274,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
           set={set}
         />
         <Field
-          label="Dual time"
+          label={t('flightForm.fields.dualTime')}
           field="dualTime"
           placeholder="H:MM"
           width="w-24"
@@ -266,7 +283,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
           set={set}
         />
         <Field
-          label="Instructor time"
+          label={t('flightForm.fields.instructorTime')}
           field="instructorTime"
           placeholder="H:MM"
           width="w-28"
@@ -278,26 +295,26 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
 
       <div className="flex flex-wrap gap-3 items-end">
         <Field
-          label="PIC name"
+          label={t('flightForm.fields.picName')}
           field="picName"
           width="w-48"
-          placeholder="Pilot name"
+          placeholder={t('flightForm.placeholders.pilotName')}
           value={flight.picName}
           set={set}
         />
         <Field
-          label="Remarks"
+          label={t('flightForm.fields.remarks')}
           field="remarks"
           width="w-64"
-          placeholder="Notes"
+          placeholder={t('flightForm.placeholders.notes')}
           value={flight.remarks}
           set={set}
         />
         <button
           type="submit"
-          className="bg-amber-500 hover:bg-amber-400 text-navy-900 font-semibold px-6 py-1.5 text-sm uppercase tracking-wider transition-colors"
+          className="bg-amber-500 hover:bg-amber-400 text-navy-900 font-semibold px-6 py-2 text-sm uppercase tracking-wider transition-colors w-full sm:w-auto"
         >
-          {editFlight ? 'Update' : 'Add flight'}
+          {editFlight ? t('flightForm.update') : t('flightForm.addFlight')}
         </button>
       </div>
     </form>

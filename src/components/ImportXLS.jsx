@@ -300,7 +300,7 @@ function mapFlylogRowToFlight(row, pilotName, primaryRole = 'pic') {
   return base;
 }
 
-export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', existingFlights = [] }) {
+export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', existingFlights = [], t = (key) => key }) {
   const fileRef = useRef(null);
   const csvRef = useRef(null);
   const [preview, setPreview] = useState(null);
@@ -450,9 +450,9 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
 
   return (
     <div className="mb-6">
-      <div className="flex items-center gap-3 mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
         <label className="bg-navy-700 border border-navy-600 hover:border-amber-500 text-white px-4 py-1.5 text-sm cursor-pointer transition-colors">
-          <span>Import JetBee XLS</span>
+          <span>{t('import.jetbee')}</span>
           <input
             ref={fileRef}
             type="file"
@@ -463,7 +463,7 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
           />
         </label>
         <label className="bg-navy-700 border border-navy-600 hover:border-amber-500 text-white px-4 py-1.5 text-sm cursor-pointer transition-colors">
-          <span>Import Flylog CSV</span>
+          <span>{t('import.flylog')}</span>
           <input
             ref={csvRef}
             type="file"
@@ -478,7 +478,7 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
       {resolving && (
         <div className="bg-navy-800 border border-navy-600 p-4 mb-3 flex items-center gap-3">
           <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm text-gray-300">Looking up airport coordinates...</span>
+          <span className="text-sm text-gray-300">{t('import.lookupAirports')}</span>
         </div>
       )}
 
@@ -486,14 +486,14 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
         <div className="bg-navy-800 border border-amber-500/30 p-4">
           {resolvedCount > 0 && (
             <div className="mb-3 px-3 py-2 border border-green-700/40 bg-green-900/20 text-xs text-green-400">
-              Auto-resolved {resolvedCount} airport{resolvedCount > 1 ? 's' : ''} from OurAirports database.
+              {t('import.resolvedAirports', `Auto-resolved ${resolvedCount} airport(s) from OurAirports database.`).replace('{count}', resolvedCount)}
             </div>
           )}
 
           {unknownAirports.length > 0 && (
             <div className="mb-4 p-3 border border-amber-500/40 bg-navy-900">
               <h4 className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">
-                ⚠ {unknownAirports.length} airport{unknownAirports.length > 1 ? 's' : ''} not found — add coordinates manually
+                ⚠ {t('import.unknownAirports', `${unknownAirports.length} airport(s) not found - add coordinates manually`).replace('{count}', unknownAirports.length)}
               </h4>
               <div className="space-y-2">
                 {unknownAirports.map((icao) => (
@@ -501,21 +501,21 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
                     <span className="font-mono text-amber-400 text-xs w-12">{icao}</span>
                     <input
                       type="text"
-                      placeholder="Lat"
+                      placeholder={t('import.lat')}
                       value={airportInputs[icao]?.lat ?? ''}
                       onChange={(e) => handleAirportInput(icao, 'lat', e.target.value)}
                       className={`${inputCls} w-24`}
                     />
                     <input
                       type="text"
-                      placeholder="Lon"
+                      placeholder={t('import.lon')}
                       value={airportInputs[icao]?.lon ?? ''}
                       onChange={(e) => handleAirportInput(icao, 'lon', e.target.value)}
                       className={`${inputCls} w-24`}
                     />
                     <input
                       type="text"
-                      placeholder="Name (optional)"
+                      placeholder={t('import.nameOptional')}
                       value={airportInputs[icao]?.name ?? ''}
                       onChange={(e) => handleAirportInput(icao, 'name', e.target.value)}
                       className={`${inputCls} w-36`}
@@ -527,33 +527,35 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
                 onClick={handleSaveAirports}
                 className="mt-3 bg-amber-500 hover:bg-amber-400 text-navy-900 font-semibold px-4 py-1 text-xs transition-colors"
               >
-                Save Airports & Recalculate Night
+                {t('import.saveAirports')}
               </button>
             </div>
           )}
 
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
             <h3 className="text-sm font-semibold text-amber-400">
-              Preview: {preview.length} flights found
+              {t('import.previewFound', `Preview: ${preview.length} flights found`).replace('{count}', preview.length)}
               {(() => {
                 const existingSigs = new Set(existingFlights.map(getFlightSignature));
                 const dupCount = preview.filter((f) => existingSigs.has(getFlightSignature(f))).length;
-                return dupCount > 0 ? ` (${dupCount} duplicate${dupCount > 1 ? 's' : ''} will be skipped)` : '';
+                return dupCount > 0
+                  ? ` ${t('import.duplicatesSkipped', `(${dupCount} duplicates will be skipped)`).replace('{count}', dupCount)}`
+                  : '';
               })()}
             </h3>
             <div className="flex gap-2">
               <button
                 onClick={handleConfirm}
                 disabled={importing}
-                className="bg-amber-500 hover:bg-amber-400 text-navy-900 font-semibold px-4 py-1 text-sm transition-colors"
+                className="bg-amber-500 hover:bg-amber-400 text-navy-900 font-semibold px-4 py-2 text-sm transition-colors"
               >
-                Import All
+                {t('import.importAll')}
               </button>
               <button
                 onClick={handleCancel}
-                className="text-gray-400 hover:text-white px-4 py-1 text-sm border border-navy-600"
+                className="text-gray-400 hover:text-white px-4 py-2 text-sm border border-navy-600"
               >
-                Cancel
+                {t('import.cancel')}
               </button>
             </div>
           </div>
@@ -562,15 +564,15 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="border-b border-navy-600 text-gray-400">
-                  <th className="px-2 py-1 text-left">Date</th>
-                  <th className="px-2 py-1 text-left">Dep</th>
-                  <th className="px-2 py-1 text-left">Off</th>
-                  <th className="px-2 py-1 text-left">Arr</th>
-                  <th className="px-2 py-1 text-left">On</th>
-                  <th className="px-2 py-1 text-left">Type</th>
-                  <th className="px-2 py-1 text-left">Reg</th>
-                  <th className="px-2 py-1 text-left">Total</th>
-                  <th className="px-2 py-1 text-left">Night</th>
+                  <th className="px-2 py-1 text-left">{t('logbook.columns.date')}</th>
+                  <th className="px-2 py-1 text-left">{t('logbook.columns.dep')}</th>
+                  <th className="px-2 py-1 text-left">{t('logbook.columns.off')}</th>
+                  <th className="px-2 py-1 text-left">{t('logbook.columns.arr')}</th>
+                  <th className="px-2 py-1 text-left">{t('logbook.columns.on')}</th>
+                  <th className="px-2 py-1 text-left">{t('logbook.columns.type')}</th>
+                  <th className="px-2 py-1 text-left">{t('logbook.columns.reg')}</th>
+                  <th className="px-2 py-1 text-left">{t('logbook.columns.total')}</th>
+                  <th className="px-2 py-1 text-left">{t('logbook.columns.night')}</th>
                 </tr>
               </thead>
               <tbody>
