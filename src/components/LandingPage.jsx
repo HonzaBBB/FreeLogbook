@@ -1,4 +1,4 @@
-export default function LandingPage({ t, onSignUp, onSignIn, children }) {
+export default function LandingPage({ t, onSignUp, onSignIn, onPrivacyClick, children }) {
   const features = [
     {
       title: t('landing.featureOneTitle'),
@@ -67,16 +67,26 @@ export default function LandingPage({ t, onSignUp, onSignIn, children }) {
 
         {children}
 
-        <footer className="text-center text-xs text-gray-500">
-          {t('landing.footerPrefix')}{' '}
-          <a
-            href={t('landing.footerUrl')}
-            target="_blank"
-            rel="noreferrer"
+        <footer className="text-center text-xs text-gray-500 space-x-2">
+          <button
+            type="button"
+            onClick={onPrivacyClick}
             className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
           >
-            {t('landing.footerLabel')}
-          </a>
+            {t('privacy.linkLabel')}
+          </button>
+          <span>|</span>
+          <span>
+            {t('landing.footerPrefix')}{' '}
+            <a
+              href={t('landing.footerUrl')}
+              target="_blank"
+              rel="noreferrer"
+              className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
+            >
+              {t('landing.footerLabel')}
+            </a>
+          </span>
         </footer>
       </main>
     </div>

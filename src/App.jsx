@@ -10,6 +10,7 @@ import FlightMap from './components/FlightMap';
 import AuthPanel from './components/AuthPanel';
 import ResetPasswordPanel from './components/ResetPasswordPanel';
 import LandingPage from './components/LandingPage';
+import PrivacyPolicy, { PRIVACY_POLICY_VERSION } from './components/PrivacyPolicy';
 import { getFlights, saveFlights, addFlight, updateFlight, deleteFlight, getSettings, getFlightSignature, exportAllData } from './utils/storage';
 import { ensureOurAirports, isOurAirportsReady } from './utils/ourairports';
 import { isSupabaseConfigured } from './lib/supabaseClient';
@@ -42,6 +43,8 @@ export default function App() {
   const [syncStatus, setSyncStatus] = useState('');
   const [needsPasswordReset, setNeedsPasswordReset] = useState(false);
   const [publicAuthMode, setPublicAuthMode] = useState('');
+  const [showPublicPrivacy, setShowPublicPrivacy] = useState(false);
+  const [privacyReturnTab, setPrivacyReturnTab] = useState('flights');
   const [locale, setLocale] = useState(() => normalizeLanguage(getSettings().language) || detectInitialLanguage());
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showMobileImport, setShowMobileImport] = useState(false);
@@ -239,10 +242,26 @@ export default function App() {
     return (
       <LandingPage
         t={t}
-        onSignUp={() => setPublicAuthMode('signup')}
-        onSignIn={() => setPublicAuthMode('signin')}
+        onSignUp={() => {
+          setShowPublicPrivacy(false);
+          setPublicAuthMode('signup');
+        }}
+        onSignIn={() => {
+          setShowPublicPrivacy(false);
+          setPublicAuthMode('signin');
+        }}
+        onPrivacyClick={() => {
+          setPublicAuthMode('');
+          setShowPublicPrivacy(true);
+        }}
       >
-        {publicAuthMode && (
+        {showPublicPrivacy && (
+          <PrivacyPolicy
+            locale={locale}
+            onBack={() => setShowPublicPrivacy(false)}
+          />
+        )}
+        {!showPublicPrivacy && publicAuthMode && (
           <section ref={publicAuthPanelRef} className="bg-navy-800 border border-navy-600 p-6">
             <h2 className="text-sm uppercase tracking-wider text-gray-300 mb-3">
               {publicAuthMode === 'signup' ? t('landing.authTitleSignUp') : t('landing.authTitleSignIn')}
@@ -254,6 +273,11 @@ export default function App() {
               title={null}
               subtitle={t('landing.authSubtitle')}
               initialMode={publicAuthMode}
+              privacyPolicyVersion={PRIVACY_POLICY_VERSION}
+              onPrivacyClick={() => {
+                setPublicAuthMode('');
+                setShowPublicPrivacy(true);
+              }}
               onSignIn={async (email, password) => {
                 setAuthBusy(true);
                 try {
@@ -262,10 +286,10 @@ export default function App() {
                   setAuthBusy(false);
                 }
               }}
-              onSignUp={async (email, password) => {
+              onSignUp={async (email, password, consentMetadata) => {
                 setAuthBusy(true);
                 try {
-                  await signUpWithEmail(email, password);
+                  await signUpWithEmail(email, password, consentMetadata);
                 } finally {
                   setAuthBusy(false);
                 }
@@ -497,10 +521,46 @@ export default function App() {
           />
         )}
         {activeTab === 'help' && <Help t={t} />}
+        {activeTab === 'privacy' && (
+          <PrivacyPolicy
+            locale={locale}
+            onBack={() => setActiveTab(privacyReturnTab)}
+          />
+        )}
       </main>
+
+      {activeTab !== 'privacy' && (
+        <footer className="px-4 pb-24 md:pb-6 text-center text-xs text-gray-500">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-3">
+            <span>
+              {t('landing.footerPrefix')}{' '}
+              <a
+                href={t('landing.footerUrl')}
+                target="_blank"
+                rel="noreferrer"
+                className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
+              >
+                {t('landing.footerLabel')}
+              </a>
+            </span>
+            <span className="hidden md:inline text-gray-600">|</span>
+            <button
+              type="button"
+              onClick={() => {
+                setPrivacyReturnTab(activeTab);
+                setActiveTab('privacy');
+              }}
+              className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
+            >
+              {t('privacy.linkLabel')}
+            </button>
+          </div>
+        </footer>
+      )}
 
       </div>
 
+      {activeTab !== 'privacy' && (
       <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-navy-700 bg-navy-900/95 backdrop-blur">
         <div className="mx-auto w-full max-w-[430px] px-3 py-2">
           <div className="grid grid-cols-3 gap-2">
@@ -541,6 +601,7 @@ export default function App() {
         </div>
         </div>
       </nav>
+      )}
     </div>
   );
 }

@@ -29,6 +29,9 @@ export const messages = {
       footerLabel: 'honzabrzak.tech',
       footerUrl: 'https://honzabrzak.tech',
     },
+    privacy: {
+      linkLabel: 'Privacy',
+    },
     auth: {
       panelTitle: 'FREELOGBOOK account',
       panelSubtitle: 'Sign in to sync your logbook to cloud.',
@@ -43,6 +46,9 @@ export const messages = {
       signUpSuccess: 'If this email can be used, check your inbox for next steps.',
       resetSent: 'If this email exists, password reset instructions were sent.',
       notConfigured: 'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env.local.',
+      privacyConsentPrefix: 'I agree to the processing of personal data according to the',
+      privacyConsentLink: 'Privacy Policy',
+      privacyConsentRequired: 'Please agree to the Privacy Policy before creating an account.',
     },
     settings: {
       languageTitle: 'Language',
@@ -282,6 +288,9 @@ export const messages = {
       footerLabel: 'honzabrzak.tech',
       footerUrl: 'https://honzabrzak.tech',
     },
+    privacy: {
+      linkLabel: 'Soukromí',
+    },
     auth: {
       panelTitle: 'FREELOGBOOK účet',
       panelSubtitle: 'Přihlas se a synchronizuj logbook do cloudu.',
@@ -296,6 +305,9 @@ export const messages = {
       signUpSuccess: 'Pokud je možné e-mail použít, zkontroluj schránku pro další kroky.',
       resetSent: 'Pokud e-mail existuje, poslali jsme instrukce pro reset hesla.',
       notConfigured: 'Supabase není nastavené. Přidej VITE_SUPABASE_URL a VITE_SUPABASE_ANON_KEY do .env.local.',
+      privacyConsentPrefix: 'Souhlasím se zpracováním osobních údajů podle',
+      privacyConsentLink: 'zásad ochrany osobních údajů',
+      privacyConsentRequired: 'Před vytvořením účtu je potřeba souhlasit se zásadami ochrany osobních údajů.',
     },
     settings: {
       languageTitle: 'Jazyk',

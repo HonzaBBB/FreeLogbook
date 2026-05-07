@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function AuthPanel({
   onSignIn,
@@ -10,11 +10,20 @@ export default function AuthPanel({
   t = (key) => key,
   title,
   subtitle,
+  privacyPolicyVersion,
+  onPrivacyClick,
 }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState(initialMode);
   const [message, setMessage] = useState('');
+  const [privacyConsentGiven, setPrivacyConsentGiven] = useState(false);
+
+  useEffect(() => {
+    setMode(initialMode);
+    setMessage('');
+    setPrivacyConsentGiven(false);
+  }, [initialMode]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -23,7 +32,14 @@ export default function AuthPanel({
       if (mode === 'signin') {
         await onSignIn(email, password);
       } else {
-        await onSignUp(email, password);
+        if (!privacyConsentGiven) {
+          setMessage(t('auth.privacyConsentRequired'));
+          return;
+        }
+        await onSignUp(email, password, {
+          privacy_consent_at: new Date().toISOString(),
+          privacy_policy_version: privacyPolicyVersion,
+        });
         setMessage(t('auth.signUpSuccess'));
       }
     } catch (error) {
@@ -112,9 +128,31 @@ export default function AuthPanel({
             required
             className="w-full bg-navy-900 border border-navy-600 text-white px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
           />
+          {mode === 'signup' && (
+            <label className="flex items-start gap-2 text-xs text-gray-300 leading-relaxed">
+              <input
+                type="checkbox"
+                checked={privacyConsentGiven}
+                onChange={(e) => setPrivacyConsentGiven(e.target.checked)}
+                required
+                className="mt-1"
+              />
+              <span>
+                {t('auth.privacyConsentPrefix')}{' '}
+                <button
+                  type="button"
+                  onClick={onPrivacyClick}
+                  className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
+                >
+                  {t('auth.privacyConsentLink')}
+                </button>
+                .
+              </span>
+            </label>
+          )}
           <button
             type="submit"
-            disabled={busy || !configured}
+            disabled={busy || !configured || (mode === 'signup' && !privacyConsentGiven)}
             className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-navy-900 font-semibold px-4 py-2 text-sm uppercase tracking-wider transition-colors"
           >
             {busy ? t('auth.pleaseWait') : mode === 'signin' ? t('auth.signIn') : t('auth.createAccount')}
