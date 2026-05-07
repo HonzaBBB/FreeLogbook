@@ -118,6 +118,15 @@ export const messages = {
       thisYear: 'This year',
       flightsUnit: 'flights',
     },
+    map: {
+      datePresetLabel: 'Date range',
+      presets: {
+        all: 'All data',
+        thisMonth: 'This month',
+        previousMonth: 'Previous month',
+        thisYear: 'This year',
+      },
+    },
     logbook: {
       filterPlaceholder: 'Filter flights... (ICAO, date, reg, type)',
       flightsCount: '{count} flights',
@@ -376,6 +385,15 @@ export const messages = {
       thisMonth: 'Tento měsíc',
       thisYear: 'Tento rok',
       flightsUnit: 'letů',
+    },
+    map: {
+      datePresetLabel: 'Období',
+      presets: {
+        all: 'Všechna data',
+        thisMonth: 'Tento měsíc',
+        previousMonth: 'Minulý měsíc',
+        thisYear: 'Tento rok',
+      },
     },
     logbook: {
       filterPlaceholder: 'Filtrovat lety... (ICAO, datum, registrace, typ)',

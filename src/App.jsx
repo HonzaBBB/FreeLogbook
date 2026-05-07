@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Dashboard from './components/Dashboard';
 import FlightTable from './components/FlightTable';
 import FlightForm from './components/FlightForm';
@@ -13,6 +13,7 @@ import LandingPage from './components/LandingPage';
 import PrivacyPolicy, { PRIVACY_POLICY_VERSION } from './components/PrivacyPolicy';
 import { getFlights, saveFlights, addFlight, updateFlight, deleteFlight, getSettings, getFlightSignature, exportAllData } from './utils/storage';
 import { ensureOurAirports, isOurAirportsReady } from './utils/ourairports';
+import { parseDateDMY } from './utils/timeUtils';
 import { isSupabaseConfigured } from './lib/supabaseClient';
 import { detectInitialLanguage, getText, normalizeLanguage } from './i18n';
 import {
@@ -48,6 +49,7 @@ export default function App() {
   const [locale, setLocale] = useState(() => normalizeLanguage(getSettings().language) || detectInitialLanguage());
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showMobileImport, setShowMobileImport] = useState(false);
+  const [mapDatePreset, setMapDatePreset] = useState('all');
   const publicAuthPanelRef = useRef(null);
 
   const t = useCallback((key, fallback = '') => getText(locale, key, fallback), [locale]);
@@ -214,6 +216,37 @@ export default function App() {
     const tp = (f.depTime || '0:00').split(':').map(Number);
     return new Date(Date.UTC(y, m - 1, d, tp[0] || 0, tp[1] || 0)).getTime();
   }
+
+  const filteredMapFlights = useMemo(() => {
+    if (mapDatePreset === 'all') return flights;
+
+    const now = new Date();
+    const nowUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+
+    let rangeStart = null;
+    let rangeEnd = null;
+
+    if (mapDatePreset === 'thisMonth') {
+      // Celý aktuální kalendářní měsíc.
+      rangeStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      rangeEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1) - 1);
+    } else if (mapDatePreset === 'previousMonth') {
+      const firstDayCurrentMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      rangeStart = new Date(Date.UTC(firstDayCurrentMonth.getUTCFullYear(), firstDayCurrentMonth.getUTCMonth() - 1, 1));
+      rangeEnd = new Date(Date.UTC(firstDayCurrentMonth.getUTCFullYear(), firstDayCurrentMonth.getUTCMonth(), 1) - 1);
+    } else if (mapDatePreset === 'thisYear') {
+      rangeStart = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+      rangeEnd = new Date(Date.UTC(now.getUTCFullYear() + 1, 0, 1) - 1);
+    } else {
+      return flights;
+    }
+
+    return flights.filter((flight) => {
+      const flightDate = parseDateDMY(flight.date);
+      if (!flightDate) return false;
+      return flightDate >= rangeStart && flightDate <= rangeEnd;
+    });
+  }, [flights, mapDatePreset]);
 
   if (showPrint) {
     return <LogbookPrint flights={flights} onClose={() => setShowPrint(false)} carryOver={settings.carryOver} t={t} />;
@@ -503,7 +536,25 @@ export default function App() {
           </>
         )}
         {activeTab === 'map' && (
-          <FlightMap flights={flights} airportsReady={!airportsLoading} />
+          <>
+            <section className="bg-navy-800 border border-navy-600 p-4 mb-3">
+              <label htmlFor="map-date-preset" className="block text-xs text-gray-400 uppercase tracking-wider mb-2">
+                {t('map.datePresetLabel', 'Date range')}
+              </label>
+              <select
+                id="map-date-preset"
+                value={mapDatePreset}
+                onChange={(event) => setMapDatePreset(event.target.value)}
+                className="w-full max-w-xs bg-navy-900 border border-navy-600 text-gray-100 px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+              >
+                <option value="all">{t('map.presets.all', 'All data')}</option>
+                <option value="thisMonth">{t('map.presets.thisMonth', 'This month')}</option>
+                <option value="previousMonth">{t('map.presets.previousMonth', 'Previous month')}</option>
+                <option value="thisYear">{t('map.presets.thisYear', 'This year')}</option>
+              </select>
+            </section>
+            <FlightMap flights={filteredMapFlights} airportsReady={!airportsLoading} />
+          </>
         )}
         {activeTab === 'settings' && (
           <Settings
