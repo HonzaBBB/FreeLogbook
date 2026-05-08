@@ -51,6 +51,7 @@ export default function App() {
   const [showMobileImport, setShowMobileImport] = useState(false);
   const [mapDatePreset, setMapDatePreset] = useState('all');
   const publicAuthPanelRef = useRef(null);
+  const flightsSectionRef = useRef(null);
 
   const t = useCallback((key, fallback = '') => getText(locale, key, fallback), [locale]);
   const tabs = [
@@ -155,6 +156,18 @@ export default function App() {
     const snapshot = JSON.parse(exportAllData());
     syncToCloud(snapshot.flights || [], snapshot.settings || {});
   }, [syncToCloud]);
+
+  function scrollToTop() {
+    if (typeof window === 'undefined') return;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function scrollToFlightsSection() {
+    if (typeof window === 'undefined') return;
+    window.requestAnimationFrame(() => {
+      flightsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 
   function handleSaveFlight(flight) {
     if (editFlight) {
@@ -422,6 +435,7 @@ export default function App() {
                 setEditFlight(null);
                 setShowForm((prev) => !prev);
                 setShowMobileMenu(false);
+                scrollToTop();
               }}
               className="w-full bg-amber-500 hover:bg-amber-400 text-navy-900 font-semibold px-4 py-2 text-sm uppercase tracking-wider transition-colors"
             >
@@ -439,19 +453,19 @@ export default function App() {
           {syncStatus && <div className="text-xs text-gray-500 mb-3">{syncStatus}</div>}
           <div className="grid grid-cols-2 gap-2 mb-3">
             <button
-              onClick={() => { setActiveTab('map'); setShowMobileMenu(false); }}
+              onClick={() => { setActiveTab('map'); setShowMobileMenu(false); scrollToTop(); }}
               className="bg-navy-800 border border-navy-600 text-gray-200 px-3 py-2 text-xs uppercase tracking-wider"
             >
               {t('menu.map')}
             </button>
             <button
-              onClick={() => { setActiveTab('settings'); setShowMobileMenu(false); }}
+              onClick={() => { setActiveTab('settings'); setShowMobileMenu(false); scrollToTop(); }}
               className="bg-navy-800 border border-navy-600 text-gray-200 px-3 py-2 text-xs uppercase tracking-wider"
             >
               {t('menu.settings')}
             </button>
             <button
-              onClick={() => { setActiveTab('help'); setShowMobileMenu(false); }}
+              onClick={() => { setActiveTab('help'); setShowMobileMenu(false); scrollToTop(); }}
               className="bg-navy-800 border border-navy-600 text-gray-200 px-3 py-2 text-xs uppercase tracking-wider"
             >
               {t('menu.help')}
@@ -461,6 +475,7 @@ export default function App() {
                 setActiveTab('flights');
                 setShowMobileImport((prev) => !prev);
                 setShowMobileMenu(false);
+                scrollToTop();
               }}
               className="bg-navy-800 border border-navy-600 text-gray-200 px-3 py-2 text-xs uppercase tracking-wider"
             >
@@ -469,7 +484,7 @@ export default function App() {
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => { setShowPrint(true); setShowMobileMenu(false); }}
+              onClick={() => { setShowPrint(true); setShowMobileMenu(false); scrollToTop(); }}
               className="flex-1 bg-navy-800 border border-navy-600 text-gray-200 px-3 py-2 text-xs uppercase tracking-wider"
             >
               {t('app.printLogbook')}
@@ -527,12 +542,14 @@ export default function App() {
                 />
               </div>
             )}
-            <FlightTable
-              flights={flights}
-              onDelete={handleDeleteFlight}
-              onEdit={handleEdit}
-              t={t}
-            />
+            <div ref={flightsSectionRef}>
+              <FlightTable
+                flights={flights}
+                onDelete={handleDeleteFlight}
+                onEdit={handleEdit}
+                t={t}
+              />
+            </div>
           </>
         )}
         {activeTab === 'map' && (
@@ -619,6 +636,7 @@ export default function App() {
             onClick={() => {
               setActiveTab('flights');
               setShowMobileMenu(false);
+              scrollToFlightsSection();
             }}
             className={`px-3 py-2 text-xs uppercase tracking-wider border ${
               activeTab === 'flights'
@@ -634,13 +652,17 @@ export default function App() {
               setEditFlight(null);
               setShowForm(true);
               setShowMobileMenu(false);
+              scrollToTop();
             }}
             className="px-3 py-2 text-xs uppercase tracking-wider bg-amber-500 text-navy-900 font-semibold"
           >
             {t('app.addFlight')}
           </button>
           <button
-            onClick={() => setShowMobileMenu((prev) => !prev)}
+            onClick={() => {
+              setShowMobileMenu((prev) => !prev);
+              scrollToTop();
+            }}
             className={`px-3 py-2 text-xs uppercase tracking-wider border ${
               showMobileMenu
                 ? 'border-amber-500 text-amber-400 bg-navy-800'
