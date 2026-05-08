@@ -193,6 +193,7 @@ export default function App() {
     setEditFlight(flight);
     setActiveTab('flights');
     setShowForm(true);
+    scrollToTop();
   }
 
   function handleCancelEdit() {
