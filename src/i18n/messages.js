@@ -230,6 +230,10 @@ export const messages = {
       duplicatesSkipped: '({count} duplicates will be skipped)',
       openImport: 'Import',
       importAll: 'Import All',
+      importSelected: 'Import Selected ({count})',
+      selectFlight: 'Select flight for import',
+      selectAll: 'Select all',
+      clearSelection: 'Clear selection',
       cancel: 'Cancel',
     },
     print: {
@@ -527,6 +531,10 @@ export const messages = {
       duplicatesSkipped: '({count} duplicit bude přeskočeno)',
       openImport: 'IMPORT',
       importAll: 'Importovat vše',
+      importSelected: 'Importovat vybrané ({count})',
+      selectFlight: 'Vybrat let k importu',
+      selectAll: 'Vybrat vše',
+      clearSelection: 'Zrušit výběr',
       cancel: 'Zrušit',
     },
     print: {

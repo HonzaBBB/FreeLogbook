@@ -315,6 +315,7 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
   const fileRef = useRef(null);
   const csvRef = useRef(null);
   const [preview, setPreview] = useState(null);
+  const [selectedFlightIds, setSelectedFlightIds] = useState(new Set());
   const [importing, setImporting] = useState(false);
   const [resolving, setResolving] = useState(false);
   const [resolvedCount, setResolvedCount] = useState(0);
@@ -358,6 +359,7 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
 
     setAirportInputs({});
     setPreview(allFlights);
+    setSelectedFlightIds(new Set(allFlights.map((f) => f.id)));
   }
 
   async function handleFlylogChange(e) {
@@ -381,6 +383,7 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
 
     if (allFlights.length === 0) {
       setPreview(null);
+      setSelectedFlightIds(new Set());
       return;
     }
 
@@ -408,6 +411,7 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
 
     setAirportInputs({});
     setPreview(allFlights);
+    setSelectedFlightIds(new Set(allFlights.map((f) => f.id)));
   }
 
   function handleAirportInput(icao, field, value) {
@@ -438,9 +442,12 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
 
   function handleConfirm() {
     if (!preview) return;
+    const selectedFlights = preview.filter((f) => selectedFlightIds.has(f.id));
+    if (selectedFlights.length === 0) return;
     setImporting(true);
-    onImport(preview);
+    onImport(selectedFlights);
     setPreview(null);
+    setSelectedFlightIds(new Set());
     setUnknownAirports([]);
     setAirportInputs({});
     setImporting(false);
@@ -450,10 +457,32 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
 
   function handleCancel() {
     setPreview(null);
+    setSelectedFlightIds(new Set());
     setUnknownAirports([]);
     setAirportInputs({});
     if (fileRef.current) fileRef.current.value = '';
     if (csvRef.current) csvRef.current.value = '';
+  }
+
+  function handleToggleFlight(flightId) {
+    setSelectedFlightIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(flightId)) {
+        next.delete(flightId);
+      } else {
+        next.add(flightId);
+      }
+      return next;
+    });
+  }
+
+  function handleSelectAllFlights() {
+    if (!preview) return;
+    setSelectedFlightIds(new Set(preview.map((f) => f.id)));
+  }
+
+  function handleClearSelectedFlights() {
+    setSelectedFlightIds(new Set());
   }
 
   const inputCls =
@@ -557,10 +586,10 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
             <div className="flex gap-2">
               <button
                 onClick={handleConfirm}
-                disabled={importing}
+                disabled={importing || selectedFlightIds.size === 0}
                 className="bg-amber-500 hover:bg-amber-400 text-navy-900 font-semibold px-4 py-2 text-sm transition-colors"
               >
-                {t('import.importAll')}
+                {t('import.importSelected', 'Import Selected ({count})').replace('{count}', selectedFlightIds.size)}
               </button>
               <button
                 onClick={handleCancel}
@@ -571,10 +600,26 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
             </div>
           </div>
 
+          <div className="flex items-center justify-end gap-3 mb-2 text-xs">
+            <button
+              onClick={handleSelectAllFlights}
+              className="text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              {t('import.selectAll', 'Select all')}
+            </button>
+            <button
+              onClick={handleClearSelectedFlights}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              {t('import.clearSelection', 'Clear selection')}
+            </button>
+          </div>
+
           <div className="overflow-x-auto max-h-64 overflow-y-auto">
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="border-b border-navy-600 text-gray-400">
+                  <th className="px-2 py-1 text-left"></th>
                   <th className="px-2 py-1 text-left">{t('logbook.columns.date')}</th>
                   <th className="px-2 py-1 text-left">{t('logbook.columns.dep')}</th>
                   <th className="px-2 py-1 text-left">{t('logbook.columns.off')}</th>
@@ -589,6 +634,14 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
               <tbody>
                 {preview.map((f) => (
                   <tr key={f.id} className="border-b border-navy-700">
+                    <td className="px-2 py-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedFlightIds.has(f.id)}
+                        onChange={() => handleToggleFlight(f.id)}
+                        aria-label={t('import.selectFlight', 'Select flight for import')}
+                      />
+                    </td>
                     <td className="px-2 py-1 font-mono">{f.date}</td>
                     <td className="px-2 py-1 font-mono">{f.depICAO}</td>
                     <td className="px-2 py-1 font-mono">{f.depTime}</td>
