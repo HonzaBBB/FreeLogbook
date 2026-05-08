@@ -464,7 +464,7 @@ export default function App() {
               }}
               className="bg-navy-800 border border-navy-600 text-gray-200 px-3 py-2 text-xs uppercase tracking-wider"
             >
-              {t('import.importAll', 'Import')}
+              {t('import.openImport', 'Import')}
             </button>
           </div>
           <div className="flex gap-2">
