@@ -49,6 +49,16 @@ function inferSinglePilotCategoryFromType(acType) {
   return null;
 }
 
+function inferIfrAutofillProfileFromFlight(flight) {
+  const knownIfr = String(flight?.ifrTime || '').trim();
+  const knownTotal = String(flight?.totalTime || '').trim();
+  if (!knownIfr) return { mode: 'none', fixedValue: '' };
+  if (knownTotal && parseTime(knownIfr) === parseTime(knownTotal)) {
+    return { mode: 'total', fixedValue: '' };
+  }
+  return { mode: 'fixed', fixedValue: knownIfr };
+}
+
 function pickLatestFlight(flights, excludeId) {
   let latest = null;
   let latestTs = -Infinity;
@@ -107,6 +117,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
   const [confirmDialog, setConfirmDialog] = useState(null);
   const confirmResolverRef = useRef(null);
   const confirmPrimaryButtonRef = useRef(null);
+  const ifrAutofillRef = useRef({ mode: 'none', fixedValue: '', userOverridden: false });
 
   const regSuggestions = useMemo(
     () => [...new Set(existingFlights.map((f) => (f.reg || '').toUpperCase().trim()).filter(Boolean))].slice(0, 50),
@@ -126,8 +137,10 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
     const latestFlight = pickLatestFlight(existingFlights, editFlight?.id);
     const today = formatDateDMY(new Date());
     if (editFlight) {
+      ifrAutofillRef.current = { mode: 'none', fixedValue: '', userOverridden: true };
       setFlight({ ...EMPTY_FLIGHT, ...editFlight });
     } else {
+      ifrAutofillRef.current = { mode: 'none', fixedValue: '', userOverridden: false };
       setFlight({
         ...EMPTY_FLIGHT,
         picName: pilotName || '',
@@ -156,22 +169,46 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
 
   function applyAircraftFromReg(next, regValue) {
     const reg = (regValue || '').toUpperCase().trim();
-    if (!reg) return;
+    if (!reg) {
+      ifrAutofillRef.current = { mode: 'none', fixedValue: '', userOverridden: false };
+      return;
+    }
     const known = [...existingFlights]
       .reverse()
       .find((f) => (f.reg || '').toUpperCase().trim() === reg && f.id !== editFlight?.id);
-    if (!known) return;
+    if (!known) {
+      ifrAutofillRef.current = { mode: 'none', fixedValue: '', userOverridden: false };
+      return;
+    }
     next.reg = reg;
     if (known.acType) next.acType = known.acType;
     next.singlePilotSE = !!known.singlePilotSE;
     next.singlePilotME = !!known.singlePilotME;
+    const ifrProfile = inferIfrAutofillProfileFromFlight(known);
+    ifrAutofillRef.current = { ...ifrProfile, userOverridden: false };
+    applyIfrAutofill(next);
     applyOperationDefaults(next, primaryRole);
+  }
+
+  function applyIfrAutofill(next) {
+    const profile = ifrAutofillRef.current;
+    if (profile.userOverridden) return;
+    if (profile.mode === 'total') {
+      next.ifrTime = next.totalTime || '';
+      return;
+    }
+    if (profile.mode === 'fixed') {
+      next.ifrTime = profile.fixedValue || '';
+    }
   }
 
   function set(key, value) {
     setFormError('');
     setFlight((prev) => {
       const next = { ...prev, [key]: value };
+      if (key === 'ifrTime') {
+        ifrAutofillRef.current = { ...ifrAutofillRef.current, userOverridden: true };
+      }
 
       if (key === 'date' && typeof value === 'string') {
         if (value.includes('-')) {
@@ -205,9 +242,11 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
           if (total) {
             next.totalTime = total;
             applyOperationDefaults(next, primaryRole);
+            applyIfrAutofill(next);
             recalcNight(next);
           } else {
             next.totalTime = '';
+            applyIfrAutofill(next);
           }
         }
       }
@@ -224,6 +263,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
           }
         }
         applyOperationDefaults(next, primaryRole);
+        applyIfrAutofill(next);
       }
 
       if (key === 'depICAO' || key === 'arrICAO' || key === 'date') {
@@ -419,6 +459,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
     onSave(saved);
     if (!editFlight) {
       const latestFlight = pickLatestFlight(existingFlights, null);
+      ifrAutofillRef.current = { mode: 'none', fixedValue: '', userOverridden: false };
       setFlight({
         ...EMPTY_FLIGHT,
         picName: pilotName || '',
