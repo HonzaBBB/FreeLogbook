@@ -79,7 +79,9 @@ function Field({
   const responsiveWidth = width.startsWith('sm:') ? width : `sm:${width}`;
   return (
     <label className={`flex flex-col gap-1 w-full ${responsiveWidth}`}>
-      <span className="text-[10px] text-gray-400 uppercase tracking-wider">{label}</span>
+      <span className="text-[10px] text-gray-400 uppercase tracking-wider leading-tight min-h-[28px] flex items-end">
+        {label}
+      </span>
       <input
         type={type}
         value={value ?? ''}
