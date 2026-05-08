@@ -1,9 +1,77 @@
 const FLIGHTS_KEY = 'flightlog_flights';
 const SETTINGS_KEY = 'flightlog_settings';
 
+function inferSinglePilotCategoryFromType(acType) {
+  const type = String(acType || '').toUpperCase().trim();
+  if (!type) return null;
+  if (type.includes('MEP') || /\bME\b/.test(type)) return 'ME';
+  if (type.includes('SEP') || /\bSE\b/.test(type)) return 'SE';
+  return null;
+}
+
+function normalizeSingleMultiPilotFlags(flight) {
+  const next = { ...flight };
+  let changed = false;
+
+  const inferred = inferSinglePilotCategoryFromType(next.acType);
+  let se = !!next.singlePilotSE;
+  let me = !!next.singlePilotME;
+
+  // Stará data mohla mít omylem oba příznaky najednou.
+  if (se && me) {
+    if (inferred === 'ME') {
+      se = false;
+      me = true;
+    } else {
+      // Bez jistoty upřednostníme SE jako bezpečnější default.
+      se = true;
+      me = false;
+    }
+    changed = true;
+  }
+
+  // Pokud typ jasně říká SEP/MEP, srovnáme starý opačný checkbox.
+  if (inferred === 'SE' && me) {
+    se = true;
+    me = false;
+    changed = true;
+  } else if (inferred === 'ME' && se) {
+    se = false;
+    me = true;
+    changed = true;
+  }
+
+  // Pokud je let single-pilot, multi-pilot čas musí být prázdný.
+  if ((se || me) && next.multiPilotTime) {
+    next.multiPilotTime = '';
+    changed = true;
+  }
+
+  if (next.singlePilotSE !== se) {
+    next.singlePilotSE = se;
+    changed = true;
+  }
+  if (next.singlePilotME !== me) {
+    next.singlePilotME = me;
+    changed = true;
+  }
+
+  return { flight: next, changed };
+}
+
 export function getFlights() {
   try {
-    return JSON.parse(localStorage.getItem(FLIGHTS_KEY) || '[]');
+    const rawFlights = JSON.parse(localStorage.getItem(FLIGHTS_KEY) || '[]');
+    let changed = false;
+    const normalizedFlights = rawFlights.map((flight) => {
+      const result = normalizeSingleMultiPilotFlags(flight);
+      if (result.changed) changed = true;
+      return result.flight;
+    });
+    if (changed) {
+      saveFlights(normalizedFlights);
+    }
+    return normalizedFlights;
   } catch {
     return [];
   }

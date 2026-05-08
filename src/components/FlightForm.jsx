@@ -15,12 +15,6 @@ import { resolveUnknownAirports } from '../utils/ourairports';
 
 const ICAO_PATTERN = /^[A-Z]{4}$/;
 
-const TURBINE_TYPES = ['BE40', 'BE4W'];
-
-function isTurbine(acType) {
-  return TURBINE_TYPES.includes(acType?.toUpperCase());
-}
-
 const EMPTY_FLIGHT = {
   date: '',
   depICAO: '',
@@ -46,6 +40,14 @@ const EMPTY_FLIGHT = {
 };
 
 const MAX_REASONABLE_FLIGHT_MINUTES = 16 * 60;
+
+function inferSinglePilotCategoryFromType(acType) {
+  const type = String(acType || '').toUpperCase().trim();
+  if (!type) return null;
+  if (type.includes('MEP') || /\bME\b/.test(type)) return 'ME';
+  if (type.includes('SEP') || /\bSE\b/.test(type)) return 'SE';
+  return null;
+}
 
 function pickLatestFlight(flights, excludeId) {
   let latest = null;
@@ -163,6 +165,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
     if (known.acType) next.acType = known.acType;
     next.singlePilotSE = !!known.singlePilotSE;
     next.singlePilotME = !!known.singlePilotME;
+    applyOperationDefaults(next, primaryRole);
   }
 
   function set(key, value) {
@@ -186,6 +189,13 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
         applyAircraftFromReg(next, value);
       }
 
+      if (key === 'singlePilotSE' && value) {
+        next.singlePilotME = false;
+      }
+      if (key === 'singlePilotME' && value) {
+        next.singlePilotSE = false;
+      }
+
       if (key === 'depTime' || key === 'arrTime') {
         if (next.depTime && next.arrTime) {
           const depMins = parseTime(next.depTime);
@@ -194,7 +204,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
           const total = canCalculateSameDay ? calculateFlightDuration(next.depTime, next.arrTime, false) : '';
           if (total) {
             next.totalTime = total;
-            applyTypeDefaults(next, primaryRole);
+            applyOperationDefaults(next, primaryRole);
             recalcNight(next);
           } else {
             next.totalTime = '';
@@ -202,8 +212,18 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
         }
       }
 
-      if (key === 'acType') {
-        applyTypeDefaults(next, primaryRole);
+      if (key === 'acType' || key === 'singlePilotSE' || key === 'singlePilotME' || key === 'totalTime') {
+        if (key === 'acType') {
+          const inferred = inferSinglePilotCategoryFromType(value);
+          if (inferred === 'SE') {
+            next.singlePilotSE = true;
+            next.singlePilotME = false;
+          } else if (inferred === 'ME') {
+            next.singlePilotSE = false;
+            next.singlePilotME = true;
+          }
+        }
+        applyOperationDefaults(next, primaryRole);
       }
 
       if (key === 'depICAO' || key === 'arrICAO' || key === 'date') {
@@ -268,31 +288,27 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
     setConfirmDialog(null);
   }
 
-  function applyTypeDefaults(f, primaryRole) {
+  // Pravidla zápisu letové doby:
+  // 1) SE a MEP jsou single-pilot kategorie a jsou vzájemně exkluzivní.
+  // 2) Multi-pilot je samostatný režim a používá se tehdy, když není zvoleno SE ani MEP.
+  function applyOperationDefaults(f, primaryRole) {
     const role = primaryRole || 'pic';
-    if (isTurbine(f.acType)) {
-      f.multiPilotTime = f.totalTime;
-      f.ifrTime = f.totalTime;
-      f.singlePilotSE = false;
-      f.singlePilotME = false;
-      if (role === 'copilot') {
-        f.picTime = '0:00';
-        f.copilotTime = f.totalTime;
-      } else {
-        f.picTime = f.totalTime;
-        f.copilotTime = '';
-      }
-    } else if (f.acType?.toUpperCase() === 'SEP' || (!isTurbine(f.acType) && f.acType)) {
+    const isSinglePilot = !!f.singlePilotSE || !!f.singlePilotME;
+
+    if (isSinglePilot) {
       f.multiPilotTime = '';
-      f.singlePilotSE = true;
-      f.singlePilotME = false;
-      if (role === 'copilot') {
-        f.picTime = '0:00';
-        f.copilotTime = f.totalTime;
-      } else {
-        f.picTime = f.totalTime;
-        f.copilotTime = '';
-      }
+    } else {
+      f.multiPilotTime = f.totalTime;
+    }
+
+    if (!f.totalTime) return;
+
+    if (role === 'copilot') {
+      f.picTime = '0:00';
+      f.copilotTime = f.totalTime;
+    } else {
+      f.picTime = f.totalTime;
+      f.copilotTime = '';
     }
   }
 

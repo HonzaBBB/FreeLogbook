@@ -21,6 +21,14 @@ const CREW_CAPTAIN_MAP = {
   HEL: 'Hermann',
 };
 
+function inferSinglePilotCategoryFromType(acType) {
+  const type = String(acType || '').toUpperCase().trim();
+  if (!type) return 'SE';
+  if (type.includes('MEP') || /\bME\b/.test(type)) return 'ME';
+  if (type.includes('SEP') || /\bSE\b/.test(type)) return 'SE';
+  return 'SE';
+}
+
 function normalizeTimeString(value) {
   const str = String(value || '').trim();
   if (!str) return '';
@@ -219,6 +227,7 @@ function mapFlylogRowToFlight(row, pilotName, primaryRole = 'pic') {
 
   const hasInstructor = !!nameInstructor;
   const hasSic = !!nameSic;
+  const singlePilotCategory = inferSinglePilotCategoryFromType(acType);
 
   const base = {
     id: generateId(),
@@ -252,6 +261,8 @@ function mapFlylogRowToFlight(row, pilotName, primaryRole = 'pic') {
     base.instructorTime = '';
     base.picTime = '';
     base.copilotTime = '';
+    base.singlePilotSE = singlePilotCategory === 'SE';
+    base.singlePilotME = singlePilotCategory === 'ME';
   } else if (hasSic) {
     // Multi-pilot flight
     base.multiPilotTime = totalTime;
@@ -265,10 +276,10 @@ function mapFlylogRowToFlight(row, pilotName, primaryRole = 'pic') {
       base.copilotTime = '';
     }
   } else {
-    // Single-pilot SEP style
+    // Single-pilot (SEP/MEP) style
     base.multiPilotTime = '';
-    base.singlePilotSE = true;
-    base.singlePilotME = false;
+    base.singlePilotSE = singlePilotCategory === 'SE';
+    base.singlePilotME = singlePilotCategory === 'ME';
     if (role === 'copilot') {
       base.picTime = '';
       base.copilotTime = totalTime;

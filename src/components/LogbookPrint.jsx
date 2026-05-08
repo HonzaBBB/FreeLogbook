@@ -160,8 +160,8 @@ export default function LogbookPrint({ flights, onClose, carryOver = {}, t = (ke
                 <th><small>{t('print.headers.timeUtc')}</small></th>
                 <th><small>{t('print.headers.type')}</small></th>
                 <th><small>REG</small></th>
-                <th><small>SP<br />SE</small></th>
-                <th><small>SP<br />ME</small></th>
+                <th><small>SP<br />SEP</small></th>
+                <th><small>SP<br />MEP</small></th>
                 <th><small>{t('print.headers.multiPilot')}</small></th>
                 <th><small>{t('print.headers.day')}</small></th>
                 <th><small>{t('print.headers.night')}</small></th>
