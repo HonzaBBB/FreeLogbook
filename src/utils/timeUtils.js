@@ -15,6 +15,31 @@ export function parseTime(str) {
 }
 
 /**
+ * Zda je čas přesně ve formátu HH:MM a v rozsahu 00:00-23:59.
+ */
+export function isValidTimeString(str) {
+  if (typeof str !== 'string') return false;
+  const cleaned = str.trim();
+  if (!/^\d{2}:\d{2}$/.test(cleaned)) return false;
+  const [h, m] = cleaned.split(':').map((v) => parseInt(v, 10));
+  return h >= 0 && h <= 23 && m >= 0 && m <= 59;
+}
+
+/**
+ * Normalizuje čas na HH:MM (podporuje i H:MM).
+ */
+export function normalizeTimeInput(str) {
+  if (typeof str !== 'string') return '';
+  const cleaned = str.trim();
+  const match = cleaned.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return '';
+  const hours = parseInt(match[1], 10);
+  const mins = parseInt(match[2], 10);
+  if (hours < 0 || hours > 23 || mins < 0 || mins > 59) return '';
+  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
+/**
  * Formátuje minuty na HH:MM string.
  */
 export function formatTime(totalMinutes) {
@@ -52,7 +77,15 @@ export function parseDateDMY(str) {
   const month = parseInt(parts[1], 10) - 1;
   const year = parseInt(parts[2], 10);
   if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
-  return new Date(Date.UTC(year, month, day));
+  const date = new Date(Date.UTC(year, month, day));
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month ||
+    date.getUTCDate() !== day
+  ) {
+    return null;
+  }
+  return date;
 }
 
 /**
@@ -67,13 +100,73 @@ export function formatDateDMY(date) {
 }
 
 /**
+ * Normalizuje běžné vstupy data na DD.MM.YYYY.
+ * Podporuje DD.MM.YYYY, DD/MM/YYYY a YYYY-MM-DD.
+ */
+export function normalizeDateInput(value) {
+  if (typeof value !== 'string') return '';
+  const cleaned = value.trim();
+  if (!cleaned) return '';
+
+  const isoMatch = cleaned.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    const year = parseInt(isoMatch[1], 10);
+    const month = parseInt(isoMatch[2], 10);
+    const day = parseInt(isoMatch[3], 10);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    if (
+      date.getUTCFullYear() !== year ||
+      date.getUTCMonth() !== month - 1 ||
+      date.getUTCDate() !== day
+    ) {
+      return '';
+    }
+    return `${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}.${year}`;
+  }
+
+  const localMatch = cleaned.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
+  if (!localMatch) return '';
+  const day = parseInt(localMatch[1], 10);
+  const month = parseInt(localMatch[2], 10);
+  const year = parseInt(localMatch[3], 10);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return '';
+  }
+  return `${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}.${year}`;
+}
+
+/**
+ * Převod DD.MM.YYYY na YYYY-MM-DD pro input[type=date].
+ */
+export function dateDmyToIso(dateDmy) {
+  const date = parseDateDMY(dateDmy);
+  if (!date) return '';
+  const y = date.getUTCFullYear();
+  const m = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+  const d = date.getUTCDate().toString().padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
  * Vypočítá dobu letu z departure a arrival time (HH:MM UTC).
  * Pokud arrival < departure, předpokládá přelet přes půlnoc.
  */
-export function calculateFlightDuration(depTime, arrTime) {
-  let depMins = parseTime(depTime);
-  let arrMins = parseTime(arrTime);
-  if (arrMins < depMins) arrMins += 24 * 60;
+export function calculateFlightDuration(depTime, arrTime, isOvernight = false) {
+  const depNormalized = normalizeTimeInput(depTime);
+  const arrNormalized = normalizeTimeInput(arrTime);
+  if (!depNormalized || !arrNormalized) return '';
+
+  const depMins = parseTime(depNormalized);
+  let arrMins = parseTime(arrNormalized);
+  if (arrMins < depMins) {
+    if (!isOvernight) return '';
+    arrMins += 24 * 60;
+  }
   return formatTime(arrMins - depMins);
 }
 
