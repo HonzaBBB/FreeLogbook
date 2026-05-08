@@ -446,7 +446,7 @@ export default function ImportXLS({ onImport, pilotName, primaryRole = 'pic', ex
   }
 
   const inputCls =
-    'bg-navy-800 border border-navy-600 text-white px-2 py-1 text-xs font-mono placeholder-gray-600 focus:border-amber-500 focus:outline-none';
+    'bg-navy-800 border border-navy-600 text-white px-2 py-1 text-base sm:text-xs font-mono placeholder-gray-600 focus:border-amber-500 focus:outline-none';
 
   return (
     <div className="mb-6">

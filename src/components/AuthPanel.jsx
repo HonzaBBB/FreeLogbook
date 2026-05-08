@@ -117,7 +117,7 @@ export default function AuthPanel({
             onChange={(e) => setEmail(e.target.value)}
             placeholder={t('auth.emailPlaceholder')}
             required
-            className="w-full bg-navy-900 border border-navy-600 text-white px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+            className="w-full bg-navy-900 border border-navy-600 text-white px-3 py-2 text-base sm:text-sm focus:border-amber-500 focus:outline-none"
           />
           <input
             type="password"
@@ -126,16 +126,16 @@ export default function AuthPanel({
             placeholder={t('auth.passwordPlaceholder')}
             minLength={6}
             required
-            className="w-full bg-navy-900 border border-navy-600 text-white px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+            className="w-full bg-navy-900 border border-navy-600 text-white px-3 py-2 text-base sm:text-sm focus:border-amber-500 focus:outline-none"
           />
           {mode === 'signup' && (
-            <label className="flex items-start gap-2 text-xs text-gray-300 leading-relaxed">
+            <label className="flex items-start gap-2 py-1 text-xs sm:text-[11px] text-gray-300 leading-relaxed cursor-pointer">
               <input
                 type="checkbox"
                 checked={privacyConsentGiven}
                 onChange={(e) => setPrivacyConsentGiven(e.target.checked)}
                 required
-                className="mt-1"
+                className="mt-0.5 h-5 w-5 sm:h-4 sm:w-4 accent-amber-500 shrink-0"
               />
               <span>
                 {t('auth.privacyConsentPrefix')}{' '}

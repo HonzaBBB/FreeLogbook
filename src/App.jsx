@@ -545,7 +545,7 @@ export default function App() {
                 id="map-date-preset"
                 value={mapDatePreset}
                 onChange={(event) => setMapDatePreset(event.target.value)}
-                className="w-full max-w-xs bg-navy-900 border border-navy-600 text-gray-100 px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+                className="w-full max-w-xs bg-navy-900 border border-navy-600 text-gray-100 px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-amber-500"
               >
                 <option value="all">{t('map.presets.all', 'All data')}</option>
                 <option value="thisMonth">{t('map.presets.thisMonth', 'This month')}</option>

@@ -87,7 +87,7 @@ export default function FlightTable({ flights, onDelete, onEdit, t = (key) => ke
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           placeholder={t('logbook.filterPlaceholder')}
-          className="bg-navy-800 border border-navy-600 text-white px-3 py-2 text-sm font-mono w-full sm:w-72 placeholder-gray-500 focus:border-amber-500 focus:outline-none"
+          className="bg-navy-800 border border-navy-600 text-white px-3 py-2 text-base sm:text-sm font-mono w-full sm:w-72 placeholder-gray-500 focus:border-amber-500 focus:outline-none"
         />
         <span className="text-xs text-gray-500">{t('logbook.flightsCount', `${sorted.length} flights`).replace('{count}', sorted.length)}</span>
       </div>

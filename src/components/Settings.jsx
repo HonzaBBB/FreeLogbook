@@ -112,7 +112,7 @@ export default function Settings({ settings, onSettingsChange, onDataChange, loc
   }
 
   const inputCls =
-    'bg-navy-800 border border-navy-600 text-white px-3 py-1.5 text-sm font-mono placeholder-gray-600 focus:border-amber-500 focus:outline-none';
+    'bg-navy-800 border border-navy-600 text-white px-3 py-1.5 text-base sm:text-sm font-mono placeholder-gray-600 focus:border-amber-500 focus:outline-none';
 
   return (
     <div className="space-y-6">
@@ -157,24 +157,26 @@ export default function Settings({ settings, onSettingsChange, onDataChange, loc
         </div>
         <div className="mt-3 space-y-1">
           <div className="text-[10px] text-gray-400 uppercase tracking-wider">{t('settings.primaryRole')}</div>
-          <div className="flex gap-4 text-xs text-gray-300">
-            <label className="flex items-center gap-1 cursor-pointer">
+          <div className="flex gap-4 text-xs sm:text-[11px] text-gray-300">
+            <label className="flex items-center gap-2 py-1 cursor-pointer">
               <input
                 type="radio"
                 name="primaryRole"
                 value="pic"
                 checked={primaryRole === 'pic'}
                 onChange={() => setPrimaryRole('pic')}
+                className="h-5 w-5 sm:h-4 sm:w-4 accent-amber-500"
               />
               <span>{t('settings.primaryRolePic')}</span>
             </label>
-            <label className="flex items-center gap-1 cursor-pointer">
+            <label className="flex items-center gap-2 py-1 cursor-pointer">
               <input
                 type="radio"
                 name="primaryRole"
                 value="copilot"
                 checked={primaryRole === 'copilot'}
                 onChange={() => setPrimaryRole('copilot')}
+                className="h-5 w-5 sm:h-4 sm:w-4 accent-amber-500"
               />
               <span>{t('settings.primaryRoleCopilot')}</span>
             </label>

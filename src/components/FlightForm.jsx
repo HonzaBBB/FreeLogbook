@@ -47,7 +47,7 @@ function Field({ label, field, type = 'text', width = 'w-24', mono = false, plac
         value={value ?? ''}
         onChange={(e) => set(field, type === 'number' ? parseInt(e.target.value) || 0 : e.target.value)}
         placeholder={placeholder}
-        className={`bg-navy-800 border border-navy-600 text-white px-2 py-2 text-sm w-full ${
+        className={`bg-navy-800 border border-navy-600 text-white px-2 py-2 text-base sm:text-sm w-full ${
           mono ? 'font-mono' : ''
         } placeholder-gray-600 focus:border-amber-500 focus:outline-none`}
       />
@@ -192,21 +192,23 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
       </div>
 
       <div className="flex flex-wrap gap-4 mb-3 items-center">
-        <label className="flex items-center gap-2">
+        <label className="flex items-center gap-2 py-1 cursor-pointer">
           <input
             type="checkbox"
             checked={!!flight.singlePilotSE}
             onChange={(e) => set('singlePilotSE', e.target.checked)}
+            className="h-5 w-5 sm:h-4 sm:w-4 accent-amber-500"
           />
-          <span className="text-[11px] text-gray-300 uppercase tracking-wider">{t('flightForm.fields.singlePilotSe')}</span>
+          <span className="text-xs sm:text-[11px] text-gray-300 uppercase tracking-wider">{t('flightForm.fields.singlePilotSe')}</span>
         </label>
-        <label className="flex items-center gap-2">
+        <label className="flex items-center gap-2 py-1 cursor-pointer">
           <input
             type="checkbox"
             checked={!!flight.singlePilotME}
             onChange={(e) => set('singlePilotME', e.target.checked)}
+            className="h-5 w-5 sm:h-4 sm:w-4 accent-amber-500"
           />
-          <span className="text-[11px] text-gray-300 uppercase tracking-wider">{t('flightForm.fields.singlePilotMe')}</span>
+          <span className="text-xs sm:text-[11px] text-gray-300 uppercase tracking-wider">{t('flightForm.fields.singlePilotMe')}</span>
         </label>
         <Field
           label={t('flightForm.fields.multiPilotTime')}

@@ -40,7 +40,7 @@ export default function ResetPasswordPanel({ onSubmit, busy = false }) {
             placeholder="New password"
             minLength={6}
             required
-            className="w-full bg-navy-900 border border-navy-600 text-white px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+            className="w-full bg-navy-900 border border-navy-600 text-white px-3 py-2 text-base sm:text-sm focus:border-amber-500 focus:outline-none"
           />
           <input
             type="password"
@@ -49,7 +49,7 @@ export default function ResetPasswordPanel({ onSubmit, busy = false }) {
             placeholder="Confirm new password"
             minLength={6}
             required
-            className="w-full bg-navy-900 border border-navy-600 text-white px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+            className="w-full bg-navy-900 border border-navy-600 text-white px-3 py-2 text-base sm:text-sm focus:border-amber-500 focus:outline-none"
           />
           <button
             type="submit"
