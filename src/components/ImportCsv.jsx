@@ -93,12 +93,43 @@ function getField(row, candidates) {
   return '';
 }
 
+function findJetBeeHeaderIndex(rows) {
+  for (let i = 0; i < rows.length; i++) {
+    const row = Array.isArray(rows[i]) ? rows[i] : [];
+    const normalized = row.map(normalizeHeader);
+    const hasDate = normalized.includes('DATE');
+    const hasReg = normalized.includes('REG');
+    const hasRoute = normalized.includes('ROUTE');
+    const hasCrew = normalized.includes('CREW');
+    const hasTime = normalized.includes('TIME');
+    const hasOnOff = normalized.includes('ON OFF') || normalized.includes('ON/OFF');
+    if (hasDate && hasReg && hasRoute && hasCrew && hasTime && hasOnOff) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function rowArrayToObject(headers, row) {
+  const mapped = {};
+  for (let i = 0; i < headers.length; i++) {
+    mapped[String(headers[i] || '')] = row?.[i] ?? '';
+  }
+  return mapped;
+}
+
 function parseJetBeeCsvText(text, pilotName, primaryRole = 'pic') {
   const flights = [];
-  const result = Papa.parse(text, { header: true, skipEmptyLines: true });
-  const rows = Array.isArray(result.data) ? result.data : [];
+  const result = Papa.parse(text, { header: false, skipEmptyLines: true });
+  const parsedRows = Array.isArray(result.data) ? result.data : [];
+  const headerIndex = findJetBeeHeaderIndex(parsedRows);
+  if (headerIndex === -1) return flights;
 
-  for (const row of rows) {
+  const headers = parsedRows[headerIndex];
+  const dataRows = parsedRows.slice(headerIndex + 1);
+
+  for (const rawRow of dataRows) {
+    const row = rowArrayToObject(headers, rawRow);
     // JetBee CSV layout: DATE, REG, ROUTE, CREW, ON/OFF, TIME, ...
     const dateVal = getField(row, ['DATE']);
     const regCode = getField(row, ['REG']);
