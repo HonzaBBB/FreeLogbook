@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Dashboard from './components/Dashboard';
 import FlightTable from './components/FlightTable';
 import FlightForm from './components/FlightForm';
-import ImportXLS from './components/ImportXLS';
+import ImportCsv from './components/ImportCsv';
 import LogbookPrint from './components/LogbookPrint';
 import Settings from './components/Settings';
 import Help from './components/Help';
@@ -524,7 +524,7 @@ export default function App() {
             )}
             <Dashboard flights={flights} carryOver={settings.carryOver} t={t} />
             <div className="hidden md:block">
-              <ImportXLS
+              <ImportCsv
                 onImport={handleImport}
                 pilotName={settings.pilotName}
                 primaryRole={settings.primaryRole || 'pic'}
@@ -534,7 +534,7 @@ export default function App() {
             </div>
             {showMobileImport && (
               <div className="md:hidden">
-                <ImportXLS
+                <ImportCsv
                   onImport={handleImport}
                   pilotName={settings.pilotName}
                   primaryRole={settings.primaryRole || 'pic'}
