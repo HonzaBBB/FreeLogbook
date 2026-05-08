@@ -7,6 +7,9 @@ export const messages = {
       title: 'Keep your flights, hour totals, and flight maps in one cloud-synced logbook.',
       subtitle:
         'FreeLogbook helps pilots keep flight records clear and organized, including automatic imports.',
+      testingNoticeTitle: 'Testing notice',
+      testingNoticeText:
+        'FreeLogbook is currently in testing. We design updates to avoid data loss, but full data availability and recovery cannot be guaranteed yet. Please keep your own JSON backups outside the browser.',
       primaryCta: 'Create Free Account',
       secondaryCta: 'Log In',
       authTitleSignIn: 'Sign in to your account',
@@ -82,6 +85,9 @@ export const messages = {
       exportJson: 'Export JSON Backup',
       importJson: 'Import JSON Backup',
       clearAllData: 'Clear All Data',
+      dataDisclaimerTitle: 'Backups are strongly recommended',
+      dataDisclaimerText:
+        'FreeLogbook is in testing. Cloud sync helps protect your logbook, but before important imports or changes, export a JSON backup and store it outside the browser.',
       carry: {
         totalTime: 'Total time',
         multiPilot: 'Multi-pilot',
@@ -107,6 +113,7 @@ export const messages = {
       hideForm: 'Hide Form',
       addFlight: '+ Add Flight',
       printLogbook: 'Print Logbook',
+      more: 'More',
     },
     dashboard: {
       totalHours: 'Total hours',
@@ -133,7 +140,9 @@ export const messages = {
       unknownAirportTitle: 'Unknown airport - add coords in Settings',
       edit: 'Edit',
       delete: 'Delete',
-      deleteConfirm: 'Delete this flight?',
+      deleteConfirm: 'Are you sure you want to delete this flight?',
+      confirmDelete: 'Yes, delete',
+      cancelDelete: 'Cancel',
       emptyState: 'No flights yet. Add a flight manually or import from XLS.',
       columns: {
         date: 'Date',
@@ -276,6 +285,9 @@ export const messages = {
       step7Title: 'Language preference',
       step7Text: 'App language is selected automatically on first load and can be changed anytime in Settings.',
       dataTitle: 'Data, cloud sync, and backups',
+      testingNoticeTitle: 'Important testing notice',
+      testingNoticeText:
+        'FreeLogbook is currently in testing. Updates are prepared with the goal of preserving existing data, but we cannot yet guarantee full data availability or recovery. Please export your own JSON backups regularly and keep them somewhere safe.',
       dataText1: 'Flight data is kept locally in your browser for speed and also synced to cloud when you are signed in. This means your logbook can be restored across devices with the same account.',
       dataText2a: 'For extra safety, you can still create your own backup file. Go to',
       dataText2b: 'later, use',
@@ -291,6 +303,9 @@ export const messages = {
       title: 'Měj lety, součty hodin a mapy letů v jednom logbooku se synchronizací do cloudu.',
       subtitle:
         'FreeLogbook pomáhá pilotům vést záznamy o letech přehledně, včetně automatických importů.',
+      testingNoticeTitle: 'Upozornění k testovacímu provozu',
+      testingNoticeText:
+        'FreeLogbook je aktuálně v testování. Úpravy připravujeme tak, aby nedošlo ke ztrátě dat, ale zatím nemůžeme garantovat plnou dostupnost ani obnovitelnost dat. Prosím dělej si vlastní JSON zálohy mimo prohlížeč.',
       primaryCta: 'Vytvořit účet zdarma',
       secondaryCta: 'Přihlásit se',
       authTitleSignIn: 'Přihlas se ke svému účtu',
@@ -366,6 +381,9 @@ export const messages = {
       exportJson: 'Export JSON zálohy',
       importJson: 'Import JSON zálohy',
       clearAllData: 'Smazat všechna data',
+      dataDisclaimerTitle: 'Vlastní zálohy důrazně doporučujeme',
+      dataDisclaimerText:
+        'FreeLogbook je v testovacím provozu. Cloud sync pomáhá logbook chránit, ale před důležitým importem nebo větší změnou si exportuj JSON zálohu a ulož ji mimo prohlížeč.',
       carry: {
         totalTime: 'Celkový čas',
         multiPilot: 'Multi-pilot',
@@ -385,6 +403,7 @@ export const messages = {
       hideForm: 'Skrýt formulář',
       addFlight: '+ Přidat let',
       printLogbook: 'Tisk logbooku',
+      more: 'VÍCE',
     },
     menu: {
       flights: 'Lety',
@@ -417,7 +436,9 @@ export const messages = {
       unknownAirportTitle: 'Neznámé letiště - doplň souřadnice v Nastavení',
       edit: 'Upravit',
       delete: 'Smazat',
-      deleteConfirm: 'Smazat tento let?',
+      deleteConfirm: 'Opravdu chceš smazat let?',
+      confirmDelete: 'Ano, smazat',
+      cancelDelete: 'Zrušit',
       emptyState: 'Zatím žádné lety. Přidej let ručně nebo importuj XLS.',
       columns: {
         date: 'Datum',
@@ -560,6 +581,9 @@ export const messages = {
       step7Title: 'Jazyk aplikace',
       step7Text: 'Jazyk se při prvním spuštění nastaví automaticky a kdykoli ho změníš v Nastavení.',
       dataTitle: 'Data, cloud synchronizace a zálohy',
+      testingNoticeTitle: 'Důležité upozornění k testování',
+      testingNoticeText:
+        'FreeLogbook je aktuálně v testování. Aktualizace připravujeme s cílem zachovat existující data, ale zatím nemůžeme garantovat plnou dostupnost ani obnovitelnost dat. Doporučujeme pravidelně exportovat vlastní JSON zálohy a ukládat je na bezpečné místo.',
       dataText1: 'Data letů se kvůli rychlosti drží lokálně v prohlížeči a po přihlášení se synchronizují do cloudu. Logbook tak obnovíš i na jiném zařízení.',
       dataText2a: 'Pro extra jistotu si můžeš stáhnout vlastní zálohu. Jdi do',
       dataText2b: 'a pro obnovu dat použij',

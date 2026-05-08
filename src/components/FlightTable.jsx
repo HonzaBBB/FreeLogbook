@@ -6,6 +6,7 @@ export default function FlightTable({ flights, onDelete, onEdit, t = (key) => ke
   const [sortKey, setSortKey] = useState('date');
   const [sortAsc, setSortAsc] = useState(true);
   const [filter, setFilter] = useState('');
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const columns = [
     { key: 'date', label: t('logbook.columns.date'), mono: true },
     { key: 'depICAO', label: t('logbook.columns.dep'), mono: true },
@@ -79,6 +80,11 @@ export default function FlightTable({ flights, onDelete, onEdit, t = (key) => ke
     }
   }
 
+  function confirmDelete(flightId) {
+    onDelete(flightId);
+    setPendingDeleteId(null);
+  }
+
   return (
     <div className="mb-6">
       <div className="mb-3 flex flex-col sm:flex-row sm:items-center gap-3">
@@ -98,7 +104,7 @@ export default function FlightTable({ flights, onDelete, onEdit, t = (key) => ke
             <div className="flex items-start justify-between gap-2 mb-2">
               <div>
                 <div className="text-xs text-gray-400 uppercase tracking-wider">{flight.date || '—'}</div>
-                <div className="font-mono text-sm text-white">{flight.depICAO || '----'} -> {flight.arrICAO || '----'}</div>
+                <div className="font-mono text-sm text-white">{flight.depICAO || '----'} {'->'} {flight.arrICAO || '----'}</div>
               </div>
               <div className="font-mono text-sm text-amber-400">{flight.totalTime || '0:00'}</div>
             </div>
@@ -116,14 +122,31 @@ export default function FlightTable({ flights, onDelete, onEdit, t = (key) => ke
                 {t('logbook.edit')}
               </button>
               <button
-                onClick={() => {
-                  if (window.confirm(t('logbook.deleteConfirm'))) onDelete(flight.id);
-                }}
-                className="flex-1 bg-navy-700 border border-navy-600 text-gray-200 px-3 py-2 text-xs uppercase tracking-wider"
+                onClick={() => setPendingDeleteId(flight.id)}
+                className="flex-1 bg-red-900/50 border border-red-700 text-red-200 px-3 py-2 text-xs uppercase tracking-wider"
               >
                 {t('logbook.delete')}
               </button>
             </div>
+            {pendingDeleteId === flight.id && (
+              <div className="mt-3 border border-red-600 bg-red-950/50 p-3">
+                <p className="text-sm font-semibold text-red-200">{t('logbook.deleteConfirm')}</p>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => confirmDelete(flight.id)}
+                    className="flex-1 bg-red-700 hover:bg-red-600 text-white px-3 py-2 text-xs uppercase tracking-wider"
+                  >
+                    {t('logbook.confirmDelete')}
+                  </button>
+                  <button
+                    onClick={() => setPendingDeleteId(null)}
+                    className="flex-1 bg-navy-700 border border-navy-600 text-gray-200 px-3 py-2 text-xs uppercase tracking-wider"
+                  >
+                    {t('logbook.cancelDelete')}
+                  </button>
+                </div>
+              </div>
+            )}
           </article>
         ))}
         {sorted.length === 0 && (
@@ -149,7 +172,7 @@ export default function FlightTable({ flights, onDelete, onEdit, t = (key) => ke
                   )}
                 </th>
               ))}
-              <th className="px-2 py-2 w-16"></th>
+              <th className="px-2 py-2 w-56"></th>
             </tr>
           </thead>
           <tbody>
@@ -181,22 +204,40 @@ export default function FlightTable({ flights, onDelete, onEdit, t = (key) => ke
                   );
                 })}
                 <td className="px-2 py-1.5 whitespace-nowrap">
-                  <button
-                    onClick={() => onEdit(flight)}
-                    className="text-gray-500 hover:text-amber-400 mr-2 text-xs"
-                    title={t('logbook.edit')}
-                  >
-                    ✎
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (window.confirm(t('logbook.deleteConfirm'))) onDelete(flight.id);
-                    }}
-                    className="text-gray-500 hover:text-red-400 text-xs"
-                    title={t('logbook.delete')}
-                  >
-                    ✕
-                  </button>
+                  {pendingDeleteId === flight.id ? (
+                    <div className="flex items-center justify-end gap-2">
+                      <span className="text-red-300 font-semibold">{t('logbook.deleteConfirm')}</span>
+                      <button
+                        onClick={() => confirmDelete(flight.id)}
+                        className="bg-red-700 hover:bg-red-600 text-white px-2 py-1 text-xs uppercase tracking-wider"
+                      >
+                        {t('logbook.confirmDelete')}
+                      </button>
+                      <button
+                        onClick={() => setPendingDeleteId(null)}
+                        className="bg-navy-700 border border-navy-600 text-gray-200 px-2 py-1 text-xs uppercase tracking-wider"
+                      >
+                        {t('logbook.cancelDelete')}
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => onEdit(flight)}
+                        className="text-gray-500 hover:text-amber-400 mr-2 text-xs"
+                        title={t('logbook.edit')}
+                      >
+                        ✎
+                      </button>
+                      <button
+                        onClick={() => setPendingDeleteId(flight.id)}
+                        className="text-gray-500 hover:text-red-400 text-xs"
+                        title={t('logbook.delete')}
+                      >
+                        ✕
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

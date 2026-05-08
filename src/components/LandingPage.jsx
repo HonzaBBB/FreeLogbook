@@ -23,6 +23,14 @@ export default function LandingPage({ t, onSignUp, onSignIn, onPrivacyClick, chi
           <p className="text-xs uppercase tracking-[0.2em] text-amber-400 mb-3">{t('landing.badge')}</p>
           <h1 className="text-3xl md:text-4xl font-bold leading-tight max-w-4xl">{t('landing.title')}</h1>
           <p className="text-sm md:text-base text-gray-300 mt-4 max-w-3xl">{t('landing.subtitle')}</p>
+          <div className="mt-5 max-w-3xl border border-amber-500/40 bg-amber-500/10 p-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-amber-300">
+              {t('landing.testingNoticeTitle')}
+            </h2>
+            <p className="mt-2 text-sm text-amber-50/90 leading-relaxed">
+              {t('landing.testingNoticeText')}
+            </p>
+          </div>
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               onClick={onSignUp}

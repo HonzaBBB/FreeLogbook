@@ -250,6 +250,14 @@ export default function Settings({ settings, onSettingsChange, onDataChange, loc
 
       <section>
         <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3">{t('settings.dataTitle')}</h3>
+        <div className="mb-3 border border-amber-500/40 bg-amber-500/10 p-3">
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-amber-300">
+            {t('settings.dataDisclaimerTitle')}
+          </h4>
+          <p className="mt-1 text-sm text-amber-50/90 leading-relaxed">
+            {t('settings.dataDisclaimerText')}
+          </p>
+        </div>
         <div className="flex gap-3 flex-wrap">
           <button onClick={handleExportJSON} className="bg-navy-700 border border-navy-600 hover:border-amber-500 text-white px-4 py-1.5 text-sm transition-colors">
             {t('settings.exportJson')}

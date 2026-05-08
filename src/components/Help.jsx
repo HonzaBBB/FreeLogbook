@@ -33,6 +33,14 @@ export default function Help({ t = (key) => key }) {
 
       <section className="pt-4 border-t border-navy-700 space-y-2">
         <h2 className="text-xl font-semibold text-white tracking-wide">{t('help.dataTitle')}</h2>
+        <div className="border border-amber-500/40 bg-amber-500/10 p-3">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-amber-300">
+            {t('help.testingNoticeTitle')}
+          </h3>
+          <p className="mt-1 text-sm text-amber-50/90 leading-relaxed">
+            {t('help.testingNoticeText')}
+          </p>
+        </div>
         <p className="text-sm text-gray-400">
           {t('help.dataText1')}
         </p>

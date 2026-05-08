@@ -647,7 +647,7 @@ export default function App() {
                 : 'border-navy-600 text-gray-300'
             }`}
           >
-            {t('app.menu', 'More')}
+            {t('app.more', 'More')}
           </button>
         </div>
         </div>
