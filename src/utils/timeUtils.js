@@ -40,6 +40,33 @@ export function normalizeTimeInput(str) {
 }
 
 /**
+ * Formátuje průběžný vstup času a automaticky doplní ":" po hodinách.
+ * Příklady: "1200" -> "12:00", "930" -> "09:30", "9:3" -> "9:3".
+ */
+export function formatTypingTimeInput(str) {
+  if (typeof str !== 'string') return '';
+  const cleaned = str.replace(/[^\d:]/g, '');
+  if (!cleaned) return '';
+
+  if (cleaned.includes(':')) {
+    const [rawHours, ...rest] = cleaned.split(':');
+    const rawMinutes = rest.join('');
+    const hours = rawHours.replace(/\D/g, '').slice(0, 2);
+    const minutes = rawMinutes.replace(/\D/g, '').slice(0, 2);
+
+    if (!hours && !minutes) return '';
+    if (cleaned.endsWith(':') && minutes.length === 0) return `${hours}:`;
+    if (minutes.length > 0) return `${hours}:${minutes}`;
+    return hours;
+  }
+
+  const digits = cleaned.replace(/\D/g, '').slice(0, 4);
+  if (digits.length <= 2) return digits;
+  if (digits.length === 3) return `0${digits.slice(0, 1)}:${digits.slice(1)}`;
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
+
+/**
  * Formátuje minuty na HH:MM string.
  */
 export function formatTime(totalMinutes) {

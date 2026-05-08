@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   calculateFlightDuration,
   dateDmyToIso,
+  formatTypingTimeInput,
   formatDateDMY,
   normalizeDateInput,
   normalizeTimeInput,
@@ -87,6 +88,7 @@ function Field({
   list,
   onBlur,
   error,
+  transformInputValue,
 }) {
   const responsiveWidth = width.startsWith('sm:') ? width : `sm:${width}`;
   return (
@@ -97,7 +99,14 @@ function Field({
       <input
         type={type}
         value={value ?? ''}
-        onChange={(e) => set(field, type === 'number' ? parseInt(e.target.value) || 0 : e.target.value)}
+        onChange={(e) => {
+          if (type === 'number') {
+            set(field, parseInt(e.target.value, 10) || 0);
+            return;
+          }
+          const nextValue = typeof transformInputValue === 'function' ? transformInputValue(e.target.value) : e.target.value;
+          set(field, nextValue);
+        }}
         onBlur={onBlur}
         placeholder={placeholder}
         list={list}
@@ -541,6 +550,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
             value={flight.depTime}
             set={set}
             error={inlineErrors.depTime}
+            transformInputValue={formatTypingTimeInput}
             onBlur={(e) => {
               const normalized = normalizeTimeInput(e.target.value);
               if (normalized) set('depTime', normalized);
@@ -571,6 +581,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
             value={flight.arrTime}
             set={set}
             error={inlineErrors.arrTime}
+            transformInputValue={formatTypingTimeInput}
             onBlur={(e) => {
               const normalized = normalizeTimeInput(e.target.value);
               if (normalized) set('arrTime', normalized);
