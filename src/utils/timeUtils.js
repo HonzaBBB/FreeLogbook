@@ -41,7 +41,7 @@ export function normalizeTimeInput(str) {
 
 /**
  * Formátuje průběžný vstup času a automaticky doplní ":" po hodinách.
- * Příklady: "1200" -> "12:00", "930" -> "09:30", "9:3" -> "9:3".
+ * Příklady: "1200" -> "12:00", "930" -> "09:30", "120" -> "12:0", "9:3" -> "9:3".
  */
 export function formatTypingTimeInput(str) {
   if (typeof str !== 'string') return '';
@@ -62,7 +62,13 @@ export function formatTypingTimeInput(str) {
 
   const digits = cleaned.replace(/\D/g, '').slice(0, 4);
   if (digits.length <= 2) return digits;
-  if (digits.length === 3) return `0${digits.slice(0, 1)}:${digits.slice(1)}`;
+  if (digits.length === 3) {
+    const firstTwoAsHour = parseInt(digits.slice(0, 2), 10);
+    if (firstTwoAsHour >= 0 && firstTwoAsHour <= 23) {
+      return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+    }
+    return `0${digits.slice(0, 1)}:${digits.slice(1)}`;
+  }
   return `${digits.slice(0, 2)}:${digits.slice(2)}`;
 }
 
