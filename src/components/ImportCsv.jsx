@@ -5,6 +5,14 @@ import { calculateNightTime } from '../utils/nightTime';
 import { generateId, getFlightSignature } from '../utils/storage';
 import { isKnownAirport, saveCustomAirport } from '../utils/airports';
 import { resolveUnknownAirports } from '../utils/ourairports';
+import {
+  parseGenericCsvText,
+  guessColumnMapping,
+  genericImportNeedsConfirmation,
+  computeMissingCriticalFields,
+  buildFlightsFromGenericMapping,
+  GENERIC_FIELD_IDS,
+} from '../utils/genericCsvImport';
 
 const REG_MAP = {
   BEE: { reg: 'OK-BEE', type: 'BE40' },
@@ -354,6 +362,7 @@ function mapFlylogRowToFlight(row, pilotName, primaryRole = 'pic') {
 export default function ImportCsv({ onImport, pilotName, primaryRole = 'pic', existingFlights = [], t = (key) => key }) {
   const fileRef = useRef(null);
   const csvRef = useRef(null);
+  const genericRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [selectedFlightIds, setSelectedFlightIds] = useState(new Set());
   const [importing, setImporting] = useState(false);
@@ -361,6 +370,36 @@ export default function ImportCsv({ onImport, pilotName, primaryRole = 'pic', ex
   const [resolvedCount, setResolvedCount] = useState(0);
   const [unknownAirports, setUnknownAirports] = useState([]);
   const [airportInputs, setAirportInputs] = useState({});
+  const [genericMappingSession, setGenericMappingSession] = useState(null);
+
+  async function finalizePreview(allFlights) {
+    let flights = allFlights;
+    const unknownCodes = findUnknownAirports(flights);
+
+    if (unknownCodes.length > 0) {
+      setResolving(true);
+      try {
+        const { resolved, unresolved } = await resolveUnknownAirports(unknownCodes);
+        setResolvedCount(resolved.length);
+        setUnknownAirports(unresolved);
+
+        if (resolved.length > 0) {
+          flights = recalcFlights(flights);
+        }
+      } catch {
+        setUnknownAirports(unknownCodes);
+        setResolvedCount(0);
+      }
+      setResolving(false);
+    } else {
+      setUnknownAirports([]);
+      setResolvedCount(0);
+    }
+
+    setAirportInputs({});
+    setPreview(flights);
+    setSelectedFlightIds(new Set(flights.map((f) => f.id)));
+  }
 
   async function handleFileChange(e) {
     const files = Array.from(e.target.files || []);
@@ -374,31 +413,7 @@ export default function ImportCsv({ onImport, pilotName, primaryRole = 'pic', ex
       allFlights.push(...flights);
     }
 
-    const unknownCodes = findUnknownAirports(allFlights);
-
-    if (unknownCodes.length > 0) {
-      setResolving(true);
-      try {
-        const { resolved, unresolved } = await resolveUnknownAirports(unknownCodes);
-        setResolvedCount(resolved.length);
-        setUnknownAirports(unresolved);
-
-        if (resolved.length > 0) {
-          allFlights = recalcFlights(allFlights);
-        }
-      } catch {
-        setUnknownAirports(unknownCodes);
-        setResolvedCount(0);
-      }
-      setResolving(false);
-    } else {
-      setUnknownAirports([]);
-      setResolvedCount(0);
-    }
-
-    setAirportInputs({});
-    setPreview(allFlights);
-    setSelectedFlightIds(new Set(allFlights.map((f) => f.id)));
+    await finalizePreview(allFlights);
   }
 
   async function handleFlylogChange(e) {
@@ -425,31 +440,102 @@ export default function ImportCsv({ onImport, pilotName, primaryRole = 'pic', ex
       return;
     }
 
-    const unknownCodes = findUnknownAirports(allFlights);
+    await finalizePreview(allFlights);
+  }
 
-    if (unknownCodes.length > 0) {
-      setResolving(true);
-      try {
-        const { resolved, unresolved } = await resolveUnknownAirports(unknownCodes);
-        setResolvedCount(resolved.length);
-        setUnknownAirports(unresolved);
+  function updateGenericUserMapping(fieldId, rawValue) {
+    setGenericMappingSession((prev) => {
+      if (!prev) return prev;
+      const idx = rawValue === '' ? null : Number(rawValue);
+      return {
+        ...prev,
+        userMapping: { ...prev.userMapping, [fieldId]: idx },
+      };
+    });
+  }
 
-        if (resolved.length > 0) {
-          allFlights = recalcFlights(allFlights);
-        }
-      } catch {
-        setUnknownAirports(unknownCodes);
-        setResolvedCount(0);
+  async function handleGenericCsvChange(e) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const text = await files[0].text();
+    const parsed = parseGenericCsvText(text);
+    if (!parsed.columns.length || !parsed.dataRows.length) {
+      setGenericMappingSession(null);
+      if (genericRef.current) genericRef.current.value = '';
+      return;
+    }
+
+    const guessed = guessColumnMapping(parsed.columns);
+    const userMapping = { ...guessed.mapping };
+    const missingCritical = computeMissingCriticalFields(userMapping);
+    const needsConfirmation = genericImportNeedsConfirmation({
+      mapping: userMapping,
+      uncertainFields: guessed.uncertainFields,
+      hasTie: guessed.hasTie,
+      missingCritical,
+    });
+
+    setGenericMappingSession({
+      columns: parsed.columns,
+      dataRows: parsed.dataRows,
+      uncertainFields: guessed.uncertainFields,
+      hasTie: guessed.hasTie,
+      missingCritical,
+      needsConfirmation,
+      userMapping,
+    });
+
+    if (!needsConfirmation) {
+      const flights = buildFlightsFromGenericMapping(parsed.dataRows, userMapping, pilotName, primaryRole);
+      if (flights.length === 0) {
+        setPreview(null);
+        setSelectedFlightIds(new Set());
+      } else {
+        await finalizePreview(flights);
       }
-      setResolving(false);
+      setGenericMappingSession(null);
     } else {
+      setPreview(null);
+      setSelectedFlightIds(new Set());
       setUnknownAirports([]);
       setResolvedCount(0);
     }
 
-    setAirportInputs({});
-    setPreview(allFlights);
-    setSelectedFlightIds(new Set(allFlights.map((f) => f.id)));
+    if (genericRef.current) genericRef.current.value = '';
+  }
+
+  async function handleGenericMappingContinue() {
+    if (!genericMappingSession) return;
+    const { userMapping, dataRows } = genericMappingSession;
+    const missing = computeMissingCriticalFields(userMapping);
+    if (missing.length > 0) {
+      window.alert(
+        t(
+          'import.genericMissingCritical',
+          'Please map Date and at least departure or arrival airport column before continuing.',
+        ),
+      );
+      return;
+    }
+
+    const flights = buildFlightsFromGenericMapping(dataRows, userMapping, pilotName, primaryRole);
+    if (flights.length === 0) {
+      window.alert(
+        t(
+          'import.genericNoFlights',
+          'No flights could be parsed with this mapping. Check column mapping and that rows contain date, route, and flight time.',
+        ),
+      );
+      return;
+    }
+
+    await finalizePreview(flights);
+    setGenericMappingSession(null);
+  }
+
+  function handleGenericMappingCancel() {
+    setGenericMappingSession(null);
   }
 
   function handleAirportInput(icao, field, value) {
@@ -491,6 +577,7 @@ export default function ImportCsv({ onImport, pilotName, primaryRole = 'pic', ex
     setImporting(false);
     if (fileRef.current) fileRef.current.value = '';
     if (csvRef.current) csvRef.current.value = '';
+    if (genericRef.current) genericRef.current.value = '';
   }
 
   function handleCancel() {
@@ -498,8 +585,10 @@ export default function ImportCsv({ onImport, pilotName, primaryRole = 'pic', ex
     setSelectedFlightIds(new Set());
     setUnknownAirports([]);
     setAirportInputs({});
+    setGenericMappingSession(null);
     if (fileRef.current) fileRef.current.value = '';
     if (csvRef.current) csvRef.current.value = '';
+    if (genericRef.current) genericRef.current.value = '';
   }
 
   function handleToggleFlight(flightId) {
@@ -551,7 +640,66 @@ export default function ImportCsv({ onImport, pilotName, primaryRole = 'pic', ex
             className="hidden"
           />
         </label>
+        <label className="bg-navy-700 border border-navy-600 hover:border-amber-500 text-white px-4 py-1.5 text-sm cursor-pointer transition-colors">
+          <span>{t('import.genericCsv', 'Import Generic CSV')}</span>
+          <input
+            ref={genericRef}
+            type="file"
+            accept=".csv,text/csv"
+            onChange={handleGenericCsvChange}
+            className="hidden"
+          />
+        </label>
       </div>
+
+      {genericMappingSession?.needsConfirmation && (
+        <div className="bg-navy-800 border border-amber-500/40 p-4 mb-3 space-y-3">
+          <div>
+            <h4 className="text-sm font-semibold text-amber-400 mb-1">{t('import.genericMappingTitle')}</h4>
+            <p className="text-xs text-gray-400">{t('import.genericMappingHint')}</p>
+          </div>
+          {(genericMappingSession.uncertainFields?.length > 0 || genericMappingSession.hasTie) && (
+            <div className="text-xs text-amber-200/90 border border-amber-600/40 px-2 py-1.5 rounded">
+              {t('import.genericUncertainNotice')}
+            </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+            {GENERIC_FIELD_IDS.map((fieldId) => (
+              <label key={fieldId} className="flex flex-col gap-0.5 text-xs">
+                <span className="text-gray-400">{t(`import.genericFields.${fieldId}`, fieldId)}</span>
+                <select
+                  value={genericMappingSession.userMapping[fieldId] ?? ''}
+                  onChange={(e) => updateGenericUserMapping(fieldId, e.target.value)}
+                  className="bg-navy-900 border border-navy-600 text-white px-2 py-1.5 text-xs font-mono focus:border-amber-500 focus:outline-none"
+                >
+                  <option value="">{t('import.genericSkipColumn')}</option>
+                  {genericMappingSession.columns.map((col) => (
+                    <option key={col.index} value={col.index}>
+                      {col.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handleGenericMappingContinue}
+              className="bg-amber-500 hover:bg-amber-400 text-navy-900 font-semibold px-4 py-2 text-sm transition-colors"
+            >
+              {t('import.genericContinue')}
+            </button>
+            <button
+              type="button"
+              onClick={handleGenericMappingCancel}
+              className="text-gray-400 hover:text-white px-4 py-2 text-sm border border-navy-600"
+            >
+              {t('import.cancel')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {resolving && (
         <div className="bg-navy-800 border border-navy-600 p-4 mb-3 flex items-center gap-3">
