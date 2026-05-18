@@ -13,6 +13,7 @@ import { calculateNightTime } from '../utils/nightTime';
 import { generateId, findDuplicateFlight } from '../utils/storage';
 import { isKnownAirport } from '../utils/airports';
 import { resolveUnknownAirports } from '../utils/ourairports';
+import { inferSinglePilotCategoryHint } from '../utils/aircraftCategory';
 
 const ICAO_PATTERN = /^[A-Z]{4}$/;
 
@@ -26,6 +27,7 @@ const EMPTY_FLIGHT = {
   reg: '',
   singlePilotSE: false,
   singlePilotME: false,
+  singlePilotMepTime: '',
   multiPilotTime: '',
   totalTime: '',
   picTime: '',
@@ -42,13 +44,6 @@ const EMPTY_FLIGHT = {
 
 const MAX_REASONABLE_FLIGHT_MINUTES = 16 * 60;
 
-function inferSinglePilotCategoryFromType(acType) {
-  const type = String(acType || '').toUpperCase().trim();
-  if (!type) return null;
-  if (type.includes('MEP') || /\bME\b/.test(type)) return 'ME';
-  if (type.includes('SEP') || /\bSE\b/.test(type)) return 'SE';
-  return null;
-}
 
 function inferIfrAutofillProfileFromFlight(flight) {
   const knownIfr = String(flight?.ifrTime || '').trim();
@@ -263,9 +258,16 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
 
       if (key === 'singlePilotSE' && value) {
         next.singlePilotME = false;
+        next.multiPilotTime = '';
       }
       if (key === 'singlePilotME' && value) {
         next.singlePilotSE = false;
+        next.multiPilotTime = '';
+      }
+      if (key === 'singlePilotMepTime' && parseTime(value) > 0) {
+        next.singlePilotME = true;
+        next.singlePilotSE = false;
+        next.multiPilotTime = '';
       }
 
       if (key === 'depTime' || key === 'arrTime') {
@@ -289,7 +291,7 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
       if (key === 'acType' || key === 'singlePilotSE' || key === 'singlePilotME' || key === 'totalTime') {
         if (key === 'acType') {
           applyIfrProfileFromType(next, value);
-          const inferred = inferSinglePilotCategoryFromType(value);
+          const inferred = inferSinglePilotCategoryHint(value);
           if (inferred === 'SE') {
             next.singlePilotSE = true;
             next.singlePilotME = false;
@@ -653,6 +655,15 @@ export default function FlightForm({ onSave, editFlight, onCancel, pilotName, pr
           />
           <span className="text-xs sm:text-[11px] text-gray-300 uppercase tracking-wider">{t('flightForm.fields.singlePilotMe')}</span>
         </label>
+        <Field
+          label={t('flightForm.fields.singlePilotMepTime')}
+          field="singlePilotMepTime"
+          placeholder="H:MM"
+          width="w-24"
+          mono
+          value={flight.singlePilotMepTime}
+          set={set}
+        />
         <Field
           label={t('flightForm.fields.multiPilotTime')}
           field="multiPilotTime"

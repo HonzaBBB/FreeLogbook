@@ -180,7 +180,10 @@ export default function LogbookPrint({ flights, onClose, carryOver = {}, t = (ke
                   <td className="mono">{f.acType}</td>
                   <td className="mono">{f.reg}</td>
                   <td className="mono">{f.singlePilotSE ? '☑' : ''}</td>
-                  <td className="mono">{f.singlePilotME ? '☑' : ''}</td>
+                  <td className="mono">
+                    {f.singlePilotME ? '☑' : ''}
+                    {f.singlePilotMepTime ? ` ${f.singlePilotMepTime}` : ''}
+                  </td>
                   <td className="mono">{f.multiPilotTime || ''}</td>
                   <td className="mono bold">{f.totalTime}</td>
                   <td className="small-text">{f.picName}</td>

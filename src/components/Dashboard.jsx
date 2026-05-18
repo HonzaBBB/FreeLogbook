@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { parseTime, parseDateDMY } from '../utils/timeUtils';
+import { getFlightMepMinutes } from '../utils/flightMep';
 
 function StatCard({ label, value, unit, compact = false }) {
   return (
@@ -27,6 +28,7 @@ export default function Dashboard({ flights, carryOver = {}, t = (key) => key })
 
     let totalMins = 0;
     let picMins = 0;
+    let mepMins = 0;
     let nightMins = 0;
     let ifrMins = 0;
     let monthFlights = 0;
@@ -36,7 +38,7 @@ export default function Dashboard({ flights, carryOver = {}, t = (key) => key })
 
     for (const f of flights) {
       const ft = parseTime(f.totalTime);
-      const pt = parseTime(f.picTime || f.totalTime);
+      const pt = parseTime(f.picTime);
       const nt = parseTime(f.nightTime);
       const it = parseTime(f.ifrTime);
 
@@ -44,6 +46,7 @@ export default function Dashboard({ flights, carryOver = {}, t = (key) => key })
       nightMins += nt;
       ifrMins += it;
       picMins += pt;
+      mepMins += getFlightMepMinutes(f);
 
       const fDate = parseDateDMY(f.date);
       if (fDate) {
@@ -62,10 +65,12 @@ export default function Dashboard({ flights, carryOver = {}, t = (key) => key })
     const coPic = parseTime(carryOver.picTime);
     const coNight = parseTime(carryOver.nightTime);
     const coIfr = parseTime(carryOver.ifrTime);
+    const coMep = parseTime(carryOver.singlePilotMepTime);
 
     return {
       totalHours: formatHours(totalMins + coTotal),
       picHours: formatHours(picMins + coPic),
+      mepHours: formatHours(mepMins + coMep),
       nightHours: formatHours(nightMins + coNight),
       ifrHours: formatHours(ifrMins + coIfr),
       totalFlights: flights.length,
@@ -81,12 +86,14 @@ export default function Dashboard({ flights, carryOver = {}, t = (key) => key })
       <div className="grid grid-cols-1 gap-2 mb-4 sm:hidden">
         <StatCard label={t('dashboard.totalHours')} value={stats.totalHours} compact />
         <StatCard label={t('dashboard.picHours')} value={stats.picHours} compact />
+        <StatCard label={t('dashboard.mepHours')} value={stats.mepHours} compact />
         <StatCard label={t('dashboard.nightHours')} value={stats.nightHours} compact />
         <StatCard label={t('dashboard.totalFlights')} value={stats.totalFlights} compact />
       </div>
-      <div className="hidden sm:grid grid-cols-2 lg:grid-cols-5 gap-2 mb-6">
+      <div className="hidden sm:grid grid-cols-2 lg:grid-cols-6 gap-2 mb-6">
         <StatCard label={t('dashboard.totalHours')} value={stats.totalHours} />
         <StatCard label={t('dashboard.picHours')} value={stats.picHours} />
+        <StatCard label={t('dashboard.mepHours')} value={stats.mepHours} />
         <StatCard label={t('dashboard.nightHours')} value={stats.nightHours} />
         <StatCard label={t('dashboard.ifrHours')} value={stats.ifrHours} />
         <StatCard label={t('dashboard.totalFlights')} value={stats.totalFlights} />

@@ -2,6 +2,7 @@ import Papa from 'papaparse';
 import { parseExcelDuration, formatTime, parseTime } from './timeUtils';
 import { calculateNightTime } from './nightTime';
 import { generateId } from './storage';
+import { inferSinglePilotCategoryFromType } from './aircraftCategory';
 
 /** Interní ID sloupců pro mapování (sekundární sloupec PIC → instructorTime). */
 export const GENERIC_FIELD_IDS = [
@@ -232,14 +233,6 @@ export function parseGenericCsvText(text) {
   return { columns, dataRows, delimiter, headerRowIndex };
 }
 
-function inferSinglePilotCategoryFromType(acType) {
-  const type = String(acType || '').toUpperCase().trim();
-  if (!type) return 'SE';
-  if (type.includes('MEP') || /\bME\b/.test(type)) return 'ME';
-  if (type.includes('SEP') || /\bSE\b/.test(type)) return 'SE';
-  return 'SE';
-}
-
 function normalizeTimeString(value) {
   const str = String(value || '').trim();
   if (!str) return '';
@@ -364,6 +357,7 @@ export function mapGenericDataRowToFlight(cells, mapping, pilotName, primaryRole
     reg,
     singlePilotSE: false,
     singlePilotME: false,
+    singlePilotMepTime: '',
     multiPilotTime: '',
     totalTime,
     picTime: '',
@@ -379,41 +373,39 @@ export function mapGenericDataRowToFlight(cells, mapping, pilotName, primaryRole
   };
 
   const hasDual = parseTime(dualDur) > 0;
+  const hasMepCol = parseTime(mepDur) > 0;
 
   if (hasDual) {
-    base.dualTime = totalTime;
-    base.singlePilotSE = singlePilotCategory === 'SE';
-    base.singlePilotME = singlePilotCategory === 'ME';
+    base.dualTime = dualDur;
     base.picTime = '';
     base.copilotTime = '';
-  } else if (parseTime(mepDur) > 0) {
-    base.multiPilotTime = mepDur;
+  }
+
+  if (hasMepCol) {
+    base.singlePilotMepTime = mepDur;
+    base.singlePilotME = true;
     base.singlePilotSE = false;
-    base.singlePilotME = false;
+  } else {
+    base.singlePilotSE = singlePilotCategory === 'SE';
+    base.singlePilotME = singlePilotCategory === 'ME';
+  }
+
+  if (!hasDual) {
     if (parseTime(picDur) > 0) {
       base.picTime = isCopilotPrimary ? '' : picDur;
       base.copilotTime = isCopilotPrimary ? picDur : '';
-    } else {
-      base.picTime = isCopilotPrimary ? '' : totalTime;
-      base.copilotTime = isCopilotPrimary ? totalTime : '';
+    } else if (!hasMepCol) {
+      if (isCopilotPrimary) {
+        base.copilotTime = totalTime;
+        base.picTime = '';
+      } else {
+        base.picTime = totalTime;
+        base.copilotTime = '';
+      }
     }
   } else if (parseTime(picDur) > 0) {
-    base.multiPilotTime = '';
-    base.singlePilotSE = singlePilotCategory === 'SE';
-    base.singlePilotME = singlePilotCategory === 'ME';
     base.picTime = isCopilotPrimary ? '' : picDur;
     base.copilotTime = isCopilotPrimary ? picDur : '';
-  } else {
-    base.multiPilotTime = '';
-    base.singlePilotSE = singlePilotCategory === 'SE';
-    base.singlePilotME = singlePilotCategory === 'ME';
-    if (isCopilotPrimary) {
-      base.copilotTime = totalTime;
-      base.picTime = '';
-    } else {
-      base.picTime = totalTime;
-      base.copilotTime = '';
-    }
   }
 
   if (parseTime(picExtra) > 0) {

@@ -13,6 +13,7 @@ import {
   buildFlightsFromGenericMapping,
   GENERIC_FIELD_IDS,
 } from '../utils/genericCsvImport';
+import { inferSinglePilotCategoryFromType } from '../utils/aircraftCategory';
 
 const REG_MAP = {
   BEE: { reg: 'OK-BEE', type: 'BE40' },
@@ -29,14 +30,6 @@ const CREW_CAPTAIN_MAP = {
   STJ: 'Stůj',
   HEL: 'Hermann',
 };
-
-function inferSinglePilotCategoryFromType(acType) {
-  const type = String(acType || '').toUpperCase().trim();
-  if (!type) return 'SE';
-  if (type.includes('MEP') || /\bME\b/.test(type)) return 'ME';
-  if (type.includes('SEP') || /\bSE\b/.test(type)) return 'SE';
-  return 'SE';
-}
 
 function normalizeTimeString(value) {
   const str = String(value || '').trim();
@@ -176,6 +169,7 @@ function parseJetBeeCsvText(text, pilotName, primaryRole = 'pic') {
       reg: regInfo.reg,
       singlePilotSE: false,
       singlePilotME: false,
+      singlePilotMepTime: '',
       multiPilotTime: totalTime,
       totalTime,
       picTime: isCopilotPrimary ? '' : totalTime,
@@ -288,6 +282,7 @@ function mapFlylogRowToFlight(row, pilotName, primaryRole = 'pic') {
     reg,
     singlePilotSE: false,
     singlePilotME: false,
+    singlePilotMepTime: '',
     multiPilotTime: '',
     totalTime,
     picTime: '',

@@ -5,6 +5,7 @@ import { getCustomAirports, saveCustomAirport, removeCustomAirport } from '../ut
 const CARRY_OVER_FIELDS = [
   { key: 'totalTime', labelKey: 'settings.carry.totalTime', placeholder: 'H:MM' },
   { key: 'multiPilotTime', labelKey: 'settings.carry.multiPilot', placeholder: 'H:MM' },
+  { key: 'singlePilotMepTime', labelKey: 'settings.carry.singlePilotMep', placeholder: 'H:MM' },
   { key: 'nightTime', labelKey: 'settings.carry.night', placeholder: 'H:MM' },
   { key: 'ifrTime', labelKey: 'settings.carry.ifr', placeholder: 'H:MM' },
   { key: 'picTime', labelKey: 'settings.carry.picTime', placeholder: 'H:MM' },

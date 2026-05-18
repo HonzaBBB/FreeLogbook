@@ -1,19 +1,14 @@
+import { inferSinglePilotCategoryHint } from './aircraftCategory';
+import { migrateMisplacedMepTime } from './flightMep';
+
 const FLIGHTS_KEY = 'flightlog_flights';
 const SETTINGS_KEY = 'flightlog_settings';
-
-function inferSinglePilotCategoryFromType(acType) {
-  const type = String(acType || '').toUpperCase().trim();
-  if (!type) return null;
-  if (type.includes('MEP') || /\bME\b/.test(type)) return 'ME';
-  if (type.includes('SEP') || /\bSE\b/.test(type)) return 'SE';
-  return null;
-}
 
 function normalizeSingleMultiPilotFlags(flight) {
   const next = { ...flight };
   let changed = false;
 
-  const inferred = inferSinglePilotCategoryFromType(next.acType);
+  const inferred = inferSinglePilotCategoryHint(next.acType);
   let se = !!next.singlePilotSE;
   let me = !!next.singlePilotME;
 
@@ -59,12 +54,27 @@ function normalizeSingleMultiPilotFlags(flight) {
   return { flight: next, changed };
 }
 
+function normalizeFlightRecord(flight) {
+  let changed = false;
+  let next = { ...flight };
+
+  const flags = normalizeSingleMultiPilotFlags(next);
+  next = flags.flight;
+  if (flags.changed) changed = true;
+
+  const mep = migrateMisplacedMepTime(next);
+  next = mep.flight;
+  if (mep.changed) changed = true;
+
+  return { flight: next, changed };
+}
+
 export function getFlights() {
   try {
     const rawFlights = JSON.parse(localStorage.getItem(FLIGHTS_KEY) || '[]');
     let changed = false;
     const normalizedFlights = rawFlights.map((flight) => {
-      const result = normalizeSingleMultiPilotFlags(flight);
+      const result = normalizeFlightRecord(flight);
       if (result.changed) changed = true;
       return result.flight;
     });
