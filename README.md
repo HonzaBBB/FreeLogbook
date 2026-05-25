@@ -50,11 +50,15 @@ Output is generated into `dist/`.
 
 This app is deployed as a static site.
 
+Repository includes `netlify.toml` and `public/_headers` (security HTTP headers copied into `dist/` on build). After deploy, verify headers on production URL.
+
 Recommended Netlify settings:
 
 - **Build command:** `npm run build`
 - **Publish directory:** `dist`
 - **Node version:** `20` (recommended for consistency)
+
+Netlify dashboard: use only `VITE_SUPABASE_*` env vars on production; optional password protection for **Deploy Previews** only (not production). See `TODO/SECURITY_CHECKLIST.md` section 6.
 
 ## Environment Variables
 

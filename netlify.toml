@@ -1,0 +1,8 @@
+# Netlify — statický deploy (viz README). Bezpečnostní hlavičky: public/_headers → dist/_headers
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
